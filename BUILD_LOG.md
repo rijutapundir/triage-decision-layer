@@ -27,10 +27,10 @@ No external APIs or datasets are used in the prototype. All data is synthetic.
 
 ## 2. What I used them for
 
-- **Research.** I reviewed research on targeted marketing and pricing, which led me to Ascarza (2018): target the customers an action changes, not the ones most at risk. That became Triage's core idea. I then researched fast decision classifiers and found Typesafe's Jev for the diagnosis step. I also studied how Agent Studio recovers checkouts today and what other competitors do. I also used AI to fact-check sources before I cited them.
+- **Research.** I reviewed research on targeted marketing and pricing, which led me to Ascarza (2018): target the customers an action changes, not the ones most at risk. That became Triage's core idea. I then researched fast decision classifiers and found Typesafe's Jev as a future option for the diagnosis step. I also studied how Agent Studio recovers checkouts today and what other competitors do. I also used AI to fact-check sources before I cited them.
 - **Interview synthesis.** After my merchant and PM conversations, I had AI turn the notes into a summary, the insights, and a to-do list I then worked through. I also ran an analysis on reviews of Razorpay merchant experiences on public forums (Reddit and LinkedIn) using Claude in Chrome.
 - **Testing the idea before building it.** I had Claude turn my logic into a small decision engine and run it on 160,000 simulated checkouts across 20 simulated markets, to see whether my approach really beats a simple rule, and where it doesn't.
-- **Building.** I wrote the spec for each screen: what it shows, the one action on it, and what a merchant should understand. I recorded the Razorpay merchant dashboard as a visual reference. Then I used Claude Code to build from those specs, one screen at a time.
+- **Building.** I wrote the spec for each screen: what it shows, the one action on it, and what a merchant should understand. I asked one of the merchants I interviewed to show me their Razorpay dashboard, as a visual reference. Then I used Claude Code to build from those specs, one screen at a time.
 - **Drafting documents.** I gave the brief, structure and key points; AI drafted and formatted the product note and this log, and I reviewed every line and made edits wherever needed.
 - **Reviewing.** I pointed gstack's reviewers at my product note and prototype, with the challenge brief, practitioner advice and the ISB case handbook as references, in that order of priority, and asked them for a stress-test and detailed review.
 
@@ -96,7 +96,7 @@ No external APIs or datasets are used in the prototype. All data is synthetic.
 
 - **Faster building, tougher testing.** Claude Code turned my screen specs into working code. Then gstack and a second AI review (Claude and ChatGPT) tried to break what it built. One QA pass caught 8 bugs before anyone else saw them.
 - **Consistent over 3 weeks, managing context.** I kept a running log of decisions in Claude Code and started a fresh session before the context was half full. The reference files stayed in the project folder. So the AI never lost track of earlier decisions.
-- **A better product, not just faster code.** One review pointed out that my note never compared Triage with the rule merchants already use. I tested that on 160,000 simulated checkouts in minutes. Triage only narrowly beat a well-tuned rule, so I redesigned it to start every merchant on the best default. Without that check, I would have submitted a weaker claim.
+- **A better product, not just faster code.** One review pointed out that my note never compared Triage with the rule merchants already use. I tested that on 160,000 simulated checkouts in minutes. Early on, Triage beat the best single default in only 12 of 20 markets, so I redesigned it to start every merchant on the best default. Without that check, I would have submitted a weaker claim.
 - **Speed without breaking things.** Every change was saved as a version, 16 automated tests ran on each one, and the reviews only reported issues without editing anything. Nothing changed without my approval.
 - **On-brand from the start.** The AI read Razorpay's exact colours and fonts from its Blade design system, so the prototype matches Razorpay's look instead of a guess.
 - **AI inside the product too.** Triage's Learning panel updates what it knows about each action from outcomes (simulated in the prototype), week by week.
@@ -129,7 +129,7 @@ Other corrections, in short:
 - **Choosing the problem.** Most recovery tools decide how to contact a customer. I focused on whether to contact them at all, and if it really changes the outcome. I chose small merchants who can't set up their own rules, unlike the ones with big tech teams.
 - **Keeping the merchant in control.** The merchant sets the policy once and can override any decision or pause everything. Every action is logged, and messages stop during a bank outage.
 - **Designing the screens.** I decided what each screen shows and made it look like Razorpay's dashboard. I added a short guide for judges and put the evaluator details on a separate page.
-- **Changing the product based on results.** My simulation showed Triage is only slightly better than a well-set simple rule. So I changed the product: every store starts on the best simple rule, and Triage takes over only where a holdout shows it earns more.
+- **Changing the product based on results.** My simulation showed that early on, Triage beat the best simple rule in only 12 of 20 markets. So I changed the product: every store starts on the best simple rule, and Triage takes over only where a holdout shows it earns more.
 - **Deciding what to measure and what to leave out.** I measure profit per rupee spent against a holdout, not recovery rate. Version one has no new channels, no chatbot and no AI-written offers.
 - **Keeping AI out of the live decision.** The live decision doesn't use an LLM, because of latency, cost and explainability. Triage has to decide while the customer is still at checkout, run on every failed payment without adding cost, and give a reason the merchant can understand.
 
