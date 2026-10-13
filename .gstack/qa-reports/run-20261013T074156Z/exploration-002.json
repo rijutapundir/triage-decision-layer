@@ -1,0 +1,6 @@
+{
+  "observationCommand": "p.sh 002 js (wait 18s then read hero/summary/tabs)",
+  "observed": "[browse] Starting server...\npage.evaluate: TypeError: Cannot read properties of null (reading 'innerText')\n    at eval (eval at evaluate (:311:30), <anonymous>:1:98)\n    at async <anonymous>:337:30",
+  "hypothesis": "Probe hit about:blank because the browse server restarted between guarded calls (tool, not product). An unguarded console check also ran on about:blank: no errors, not product evidence. Redo baseline as one chain: goto + wait + read.",
+  "nextCommand": "p.sh 003 chain (goto / ; js wait 18s + read hero/summary/tabs/rows)"
+}

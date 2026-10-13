@@ -1,0 +1,6 @@
+{
+  "observationCommand": "p.sh 005 js (click Proof nav; read synchronously)",
+  "observed": "{\"url\":\"#proof\",\"title\":\"Triage · Decision feed\",\"proof\":[],\"rules\":[],\"handover\":[],\"foot\":\"\"}",
+  "hypothesis": "Empty read: view renders on hashchange, after my synchronous read (harness timing, not product). Re-read after 500 ms.",
+  "nextCommand": "p.sh 006 js (wait 500ms; read proof/rules/handover/title)"
+}

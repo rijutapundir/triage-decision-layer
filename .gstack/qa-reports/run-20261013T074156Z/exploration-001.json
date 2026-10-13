@@ -1,0 +1,6 @@
+{
+  "observationCommand": "bun gstack-qa-deadline run deadline.json -- $B goto https://triage-decision-layer.netlify.app/",
+  "observed": "[browse] Starting server...\nNavigated to https://triage-decision-layer.netlify.app/ (200)",
+  "hypothesis": "C1: page loaded 200; wait for the worker and read hero, stats, tabs and console in one read",
+  "nextCommand": "$B js (wait 18s, then hero/summary/tabs/console errors)"
+}

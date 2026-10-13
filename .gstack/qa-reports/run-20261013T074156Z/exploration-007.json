@@ -1,0 +1,6 @@
+{
+  "observationCommand": "p.sh 007 js (override CHK-4111 to payment link; read row, callout, audit)",
+  "observed": "{\"row\":\"2h 20m ago | CHK-4111 | ₹6,400 | Card · HDFC | Bank decline | Payment link (your override) | Engine pick: Voice call + link | ₹0.80\",\"panelOpen\":true,\"selectNow\":\"payment_link\",\"callout\":\"Voice call + link. Bank decline. Beats payment link by ₹552 in net value.\\nYour override. This case gets payment link. It leaves the holdout measurement: overrides can teach diagnosis, never lift.\",\"summary\":\"Cases 42 Contacted 28 · Hold 9 · Blocked 5 Cash spend ₹100.40 Messaging, calls and agent time actually paid Discount avoided ₹63 3 cases where a discount scored highest and was refused\",\"audit\":\"Time\\tWho\\tWhat\\n01:16:07 pm\\tMerchant\\tOverrode CHK-4111: Voice call + link → Payment link\\n01:14:37 pm\\tTriage\\tSession started. 42 cases decided under the approved policy; holdout 10%, explore 10%\"}",
+  "hypothesis": "C4 passes: row, callout, cash spend drop and audit entry correct. Next C5: on feed click Pause, read; click outage, read; undo both, read.",
+  "nextCommand": "p.sh 008 js (hash #feed; pause; read; outage; read; resume + end outage; read)"
+}

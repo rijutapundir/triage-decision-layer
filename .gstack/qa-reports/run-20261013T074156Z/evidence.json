@@ -1,0 +1,102 @@
+{
+  "revision": "da38e40a0199434b0a7404e030d279af79729d39",
+  "runtime": "bun 1.4.3",
+  "cwd": "C:\\Users\\rijut\\triage",
+  "limits": [
+    "checkpoint 001: written from the tool output after the probe (runner had not yet tee'd output); content copied verbatim",
+    "checkpoint 002: probe ran on about:blank after a browse-server restart; an unguarded console --errors call also ran without a checkpoint (about:blank, no product evidence)",
+    "checkpoints 005, 011, 012: harness errors (synchronous read, JSON-escaped regex), not product behaviour",
+    "probe 014: hash-only gotos kept state from probe 013, so Holdout counts include one override",
+    "Accessibility and Performance not tested",
+    "Links: in-app hash routes only; asset HTTP 200s were checked before the run with curl, not as probes"
+  ],
+  "evidence": [],
+  "learning": [
+    {
+      "observationCommand": "bun gstack-qa-deadline run deadline.json -- $B goto https://triage-decision-layer.netlify.app/",
+      "hypothesis": "C1: page loaded 200; wait for the worker and read hero, stats, tabs and console in one read",
+      "nextCommand": "$B js (wait 18s, then hero/summary/tabs/console errors)"
+    },
+    {
+      "observationCommand": "p.sh 002 js (wait 18s then read hero/summary/tabs)",
+      "hypothesis": "Probe hit about:blank because the browse server restarted between guarded calls (tool, not product). An unguarded console check also ran on about:blank: no errors, not product evidence. Redo baseline as one chain: goto + wait + read.",
+      "nextCommand": "p.sh 003 chain (goto / ; js wait 18s + read hero/summary/tabs/rows)"
+    },
+    {
+      "observationCommand": "p.sh 003 chain < c003.json (goto /; js wait 18s + read; console --errors)",
+      "hypothesis": "C1 passes. Hero says \"Running: best default\" next to \"As shipped, Triage reaches 100-123%\": possible mixed message, note for Content. Next C2: click From the note tab and read visible rows incl. reasons.",
+      "nextCommand": "p.sh 004 js (click note tab; read visible rows)"
+    },
+    {
+      "observationCommand": "p.sh 004 js (click note tab; read visible rows)",
+      "hypothesis": "C2 passes: 4 rows, note actions and reasons. CHK-4140 reason lacks the cause prefix the others have (copy nit). Next C3: open Proof via nav link and read both tables plus handover statuses.",
+      "nextCommand": "p.sh 005 js (click Proof nav; read proof-table, rules-table, hv-status)"
+    },
+    {
+      "observationCommand": "p.sh 005 js (click Proof nav; read synchronously)",
+      "hypothesis": "Empty read: view renders on hashchange, after my synchronous read (harness timing, not product). Re-read after 500 ms.",
+      "nextCommand": "p.sh 006 js (wait 500ms; read proof/rules/handover/title)"
+    },
+    {
+      "observationCommand": "p.sh 006 js (wait 500ms; read proof/rules/handover)",
+      "hypothesis": "C3 values match the note. FINDING: same page contradicts itself: As shipped row counts Home decor at 108% (Triage) while its handover chart says still on default at week 8; proof foot lists Home decor under Triage. Next C4: feed, open CHK-4111, override to payment link, read row + callout, then audit.",
+      "nextCommand": "p.sh 007 js (hash #feed; click CHK-4111; set override payment_link; read row/callout; hash #audit; read audit)"
+    },
+    {
+      "observationCommand": "p.sh 007 js (override CHK-4111 to payment link; read row, callout, audit)",
+      "hypothesis": "C4 passes: row, callout, cash spend drop and audit entry correct. Next C5: on feed click Pause, read; click outage, read; undo both, read.",
+      "nextCommand": "p.sh 008 js (hash #feed; pause; read; outage; read; resume + end outage; read)"
+    },
+    {
+      "observationCommand": "p.sh 008 js (pause; outage; undo both; read each state)",
+      "hypothesis": "C5 passes: pause zeroes contact with banner, outage blocks 8 HDFC cases with alert, both reversible. Outage also blocks note case CHK-4111 (correct, demo caveat). Next C6: Policy, switch off Voice call, read impact, approve, read feed summary and audit.",
+      "nextCommand": "p.sh 009 js (hash #policy; uncheck voice_call; read impact; click approve; read status, feed summary, audit)"
+    },
+    {
+      "observationCommand": "p.sh 009 js (policy: voice off; read impact; approve; read feed, audit)",
+      "hypothesis": "C6 passes. Hypothesis: overrides are not re-checked against a later policy, so an override can run an action the approved policy forbids. Test: override CHK-4100 to discount, then switch discounts off and approve, read the CHK-4100 row and its select.",
+      "nextCommand": "p.sh 010 js (#feed; CHK-4100 override discount; #policy uncheck discount; approve; #feed read CHK-4100 row and override select)"
+    },
+    {
+      "observationCommand": "p.sh 010 js (override CHK-4100 to discount; policy discount off; approve; read)",
+      "hypothesis": "BUG: override to discount survives approving a policy with discounts off; row still runs Approved discount; select shows Triage decision while override is active. Also stale override on CHK-4111 equal to engine pick. Replay from a fresh load (same js) to confirm.",
+      "nextCommand": "p.sh 011 chain (goto /; same js as 010)"
+    },
+    {
+      "observationCommand": "p.sh 011 chain < c011.json (goto /; js)",
+      "hypothesis": "Replay did not run: my JSON encoding turned \\n into a raw newline inside a regex (harness error). Rerun the identical steps with the newline escaped.",
+      "nextCommand": "p.sh 012 chain < c012.json (goto /; same js, newline escaped)"
+    },
+    {
+      "observationCommand": "p.sh 012 chain < c012.json",
+      "hypothesis": "Same harness error: the sed rewrite did not match. Replace the regex with split(String.fromCharCode(10)).join(\" | \"); otherwise identical steps.",
+      "nextCommand": "p.sh 013 chain < c013.json (goto /; same js, no regex)"
+    },
+    {
+      "observationCommand": "p.sh 013 chain < c013.json (goto /; override CHK-4100 to discount; discounts off; approve; read)",
+      "hypothesis": "CONFIRMED on fresh load: override to an action the newly approved policy forbids still runs, and the select hides it. Next C7: Outcomes and Holdout content, then reload on #holdout and history back.",
+      "nextCommand": "p.sh 014 chain (goto /#outcomes; js read; goto /#holdout; js read; reload; js hash/title; back; js hash/title; console --errors)"
+    },
+    {
+      "observationCommand": "p.sh 014 chain < c014.json (outcomes, holdout, reload, back, console)",
+      "hypothesis": "C7 passes; reload and back keep the view; no console errors. Note: hash gotos kept probe-013 state (override arm), and Holdout arms then sum to 36 of 37 eligible: overridden cases are counted nowhere. Next C8: 375x812, fresh load, measure overflow on each view, screenshot feed and proof.",
+      "nextCommand": "p.sh 015 chain (viewport 375x812; goto /; wait; js measure all views; screenshot feed; js #proof; screenshot proof)"
+    },
+    {
+      "observationCommand": "p.sh 015 chain < c015.json (375x812; measure each view; screenshots)",
+      "hypothesis": "C8: feed/policy/proof fit. Audit: .content scrollWidth 742 at 375 (sideways scroll). Outcomes/Holdout tables extend past the viewport while content does not scroll: possibly clipped. Screenshots failed (my path bug). Next: screenshots of audit, outcomes, holdout at 375 plus right-edge measurements.",
+      "nextCommand": "p.sh 016 chain (js #outcomes + table/card rects; screenshot; #holdout same; #audit same)"
+    },
+    {
+      "observationCommand": "p.sh 016 chain < c016.json (375: outcomes/holdout/audit rects + screenshots)",
+      "hypothesis": "Outcomes and Holdout tables scroll inside their cards (overflow auto): by design. Audit table is 725px in an unscrolled card, text clipped and .content scrolls sideways: FINDING (mobile). Last probe: desktop 1280x800 screenshots of feed and proof after the worker finishes.",
+      "nextCommand": "p.sh 017 chain (viewport 1280x800; goto /; wait 16s; screenshot feed; #proof; screenshot proof; console --errors)"
+    }
+  ],
+  "verdict": {
+    "status": "inconclusive",
+    "open": [
+      "no evidence rows"
+    ]
+  }
+}

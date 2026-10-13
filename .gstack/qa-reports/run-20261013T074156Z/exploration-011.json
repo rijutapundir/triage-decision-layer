@@ -1,0 +1,6 @@
+{
+  "observationCommand": "p.sh 011 chain < c011.json (goto /; js)",
+  "observed": "[goto] Navigated to https://triage-decision-layer.netlify.app/ (200)\n\n[js] ERROR: page.evaluate: SyntaxError: Invalid regular expression: missing /\n    at eval (<anonymous>)\n    at UtilityScript.evaluate (<anonymous>:311:30)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+  "hypothesis": "Replay did not run: my JSON encoding turned \\n into a raw newline inside a regex (harness error). Rerun the identical steps with the newline escaped.",
+  "nextCommand": "p.sh 012 chain < c012.json (goto /; same js, newline escaped)"
+}

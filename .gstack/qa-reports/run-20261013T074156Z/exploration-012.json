@@ -1,0 +1,6 @@
+{
+  "observationCommand": "p.sh 012 chain < c012.json",
+  "observed": "[goto] Navigated to https://triage-decision-layer.netlify.app/ (200)\n\n[js] ERROR: page.evaluate: SyntaxError: Invalid regular expression: missing /\n    at eval (<anonymous>)\n    at UtilityScript.evaluate (<anonymous>:311:30)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+  "hypothesis": "Same harness error: the sed rewrite did not match. Replace the regex with split(String.fromCharCode(10)).join(\" | \"); otherwise identical steps.",
+  "nextCommand": "p.sh 013 chain < c013.json (goto /; same js, no regex)"
+}

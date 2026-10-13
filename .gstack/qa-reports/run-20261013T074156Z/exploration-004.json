@@ -1,0 +1,6 @@
+{
+  "observationCommand": "p.sh 004 js (click note tab; read visible rows)",
+  "observed": "[\"CHK-4140 | ₹499 | Hold | Discount scored higher but did not clear the margin hurdle; took hold instead.\",\"CHK-4100 | ₹680 | Payment link | UPI timeout. Twice the net value of retry prompt for ₹0.60 more.\",\"CHK-4141 | ₹2,900 | Free shipping | Price hesitation. Beats approved discount by ₹23 in net value.\",\"CHK-4111 | ₹6,400 | Voice call + link | Bank decline. Beats payment link by ₹552 in net value.\"]",
+  "hypothesis": "C2 passes: 4 rows, note actions and reasons. CHK-4140 reason lacks the cause prefix the others have (copy nit). Next C3: open Proof via nav link and read both tables plus handover statuses.",
+  "nextCommand": "p.sh 005 js (click Proof nav; read proof-table, rules-table, hv-status)"
+}

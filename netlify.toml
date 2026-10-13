@@ -1,0 +1,4 @@
+# The live site is the deploy/ folder only. Everything else in this repo
+# (tests, reference simulations, docs, QA reports) is never served.
+[build]
+  publish = "deploy"

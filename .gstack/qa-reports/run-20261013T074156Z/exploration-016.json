@@ -1,0 +1,6 @@
+{
+  "observationCommand": "p.sh 016 chain < c016.json (375: outcomes/holdout/audit rects + screenshots)",
+  "observed": "[js] {\"tableRight\":535,\"cardRight\":359,\"cardOverflow\":\"auto\"}\n\n[screenshot] Screenshot saved: C:/Users/rijut/triage/.gstack/qa-reports/run-20261013T074156Z/screenshots/mobile-outcomes.png\n\n[js] {\"tableRight\":697,\"cardRight\":359,\"cardOverflow\":\"auto\"}\n\n[screenshot] Screenshot saved: C:/Users/rijut/triage/.gstack/qa-reports/run-20261013T074156Z/screenshots/mobile-holdout.png\n\n[js] {\"tableW\":725}\n\n[screenshot] Screenshot saved: C:/Users/rijut/triage/.gstack/qa-reports/run-20261013T074156Z/screenshots/mobile-audit.png",
+  "hypothesis": "Outcomes and Holdout tables scroll inside their cards (overflow auto): by design. Audit table is 725px in an unscrolled card, text clipped and .content scrolls sideways: FINDING (mobile). Last probe: desktop 1280x800 screenshots of feed and proof after the worker finishes.",
+  "nextCommand": "p.sh 017 chain (viewport 1280x800; goto /; wait 16s; screenshot feed; #proof; screenshot proof; console --errors)"
+}
