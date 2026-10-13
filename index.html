@@ -12,10 +12,6 @@
       <div class="brand">Triage</div>
       <div class="merchant" id="merchant-name"></div>
       <div class="topbar-right">
-        <label class="search">
-          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="9" cy="9" r="6"/><path d="M13.5 13.5 17 17"/></svg>
-          <input type="search" id="search" placeholder="Search cases by ID, item or bank" aria-label="Search cases">
-        </label>
         <span class="badge"><span class="badge-full">Prototype, synthetic data</span><span class="badge-short">Synthetic</span></span>
         <span class="avatar" id="avatar" aria-hidden="true"></span>
       </div>
@@ -41,6 +37,12 @@
       <main class="main">
         <div class="content">
           <section class="view" id="view-feed">
+            <div class="card hero">
+              <div class="hero-kicker">A decision layer between a failed checkout and Agent Studio's cart recovery agent</div>
+              <p class="hero-line">Triage starts every merchant on the best default rule, and takes over only where a holdout proves it earns more.</p>
+              <div class="hero-foot" id="hero-foot"></div>
+            </div>
+
             <div class="page-head">
               <div>
                 <h1>Decision feed</h1>
@@ -94,21 +96,13 @@
           <section class="view" id="view-outcomes" hidden>
             <div class="page-head">
               <div>
-                <h1>Outcomes</h1>
-                <p class="muted">30-day pilot, simulated.</p>
+                <h1>Simulated 30-day pilot (aggregate)</h1>
+                <p class="muted">Fixed illustrative totals for a merchant like Kaara Living, not computed from today's feed.</p>
               </div>
               <span class="sim-pill">Simulated</span>
             </div>
 
             <div class="summary" id="outcome-stats"></div>
-
-            <div class="card chart-card">
-              <div class="card-head">
-                <h2>Recovery rate by action</h2>
-                <p class="muted">Share of cases that went on to pay, compared with the holdout that received no contact.</p>
-              </div>
-              <div class="rate-chart" id="rate-chart"></div>
-            </div>
 
             <div class="card spend-card">
               <div class="card-head">

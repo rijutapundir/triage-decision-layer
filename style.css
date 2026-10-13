@@ -156,6 +156,13 @@ h1 { font-size: 24px; font-weight: 700; margin: 0 0 var(--s1); }
 
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); }
 
+/* Hero: the one-line takeaway, first thing on the feed */
+.hero { padding: var(--s4) var(--s6); margin-bottom: var(--s6); border-left: 4px solid var(--blue); }
+.hero-kicker { font-size: 12px; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; color: var(--muted); }
+.hero-line { margin: var(--s1) 0 0; font-size: 18px; line-height: 1.35; font-weight: 600; color: var(--heading); }
+.hero-foot:empty { display: none; }
+.hero-foot { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s4); margin-top: var(--s3); font-size: 13px; }
+
 /* Stat cards: label -> big number -> sub line */
 .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--s4); margin-bottom: var(--s6); }
 .stat { padding: var(--s4) var(--s6) var(--s6); }

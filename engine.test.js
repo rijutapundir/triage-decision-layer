@@ -112,5 +112,20 @@ check('Free shipping costs contact + fatigue + p(recover) x subsidy',
       'cost ' + fs9.cost.toFixed(2) + ' + subsidy ' + fs9.expectedSubsidy.toFixed(2) +
       ' vs expected ' + expectedCost.toFixed(2));
 
+// 10. The four cases in the product note are in the feed, acted on, with the note's reasons.
+const NOTE_CASES = {
+  'CHK-4100': ['payment_link',  'Twice the net value of retry prompt for ₹0.60 more'],
+  'CHK-4111': ['voice_call',    'Beats payment link by ₹552'],
+  'CHK-4140': ['hold',          'did not clear the margin hurdle'],
+  'CHK-4141': ['free_shipping', 'Beats approved discount by ₹23']
+};
+const noteRows = day.filter(r => NOTE_CASES[r.c.id]);
+check('The product note\'s four cases are treated and decided as the note says',
+      noteRows.length === 4 && noteRows.every(r =>
+        r.arm === 'treated' &&
+        r.d.chosen.action === NOTE_CASES[r.c.id][0] &&
+        r.d.reason.includes(NOTE_CASES[r.c.id][1])),
+      noteRows.map(r => r.c.id + ' ' + r.arm + ' ' + r.d.chosen.action + ': ' + r.d.reason).join(' | '));
+
 console.log('\n  ' + pass + ' passed, ' + fail + ' failed\n');
 if (fail > 0 && typeof process !== 'undefined') process.exitCode = 1;

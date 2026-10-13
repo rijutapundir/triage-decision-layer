@@ -304,7 +304,16 @@ function decide(c, policy, context) {
              Math.round(LIFT_TABLE[cause].baseline * 100) + '% with no contact.';
   } else if (runnerUp) {
     const gap = winner.netValue - runnerUp.netValue;
-    if (gap < EQUIVALENCE_GAP) {
+    /* A small rupee gap can still be a large ratio on a small cart. When the
+       winner is worth well over the runner-up, say so as a ratio, not a margin. */
+    const ratio = runnerUp.netValue > 0 ? winner.netValue / runnerUp.netValue : 0;
+    if (gap < EQUIVALENCE_GAP && ratio >= 1.5) {
+      const times = ratio >= 1.75 && ratio < 2.5 ? 'Twice' : 'About ' + ratio.toFixed(1) + 'x';
+      const extra = winner.cost - runnerUp.cost;
+      reason = CAUSE_LABEL[cause] + '. ' + times + ' the net value of ' +
+               runnerUp.label.toLowerCase() +
+               (extra > 0 ? ' for ₹' + extra.toFixed(2) + ' more.' : '.');
+    } else if (gap < EQUIVALENCE_GAP) {
       /* A gap this small is inside the noise of the assumed lifts. Do not
          state it as a precise rupee margin. Only claim the cheaper rung when
          that is actually what was taken. */

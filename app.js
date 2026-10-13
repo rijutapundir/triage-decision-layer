@@ -45,6 +45,10 @@
     return r.taken.action === 'hold' ? 'hold' : 'contact';
   }
 
+  // The four worked examples in the product note.
+  const NOTE_CASE_IDS = ['CHK-4100', 'CHK-4111', 'CHK-4140', 'CHK-4141'];
+  const isNoteCase = r => NOTE_CASE_IDS.includes(r.c.id);
+
   // Mix key: the action actually taken, or 'blocked' when a gate stopped it.
   const mixKey = r => (r.d.blocked ? 'blocked' : r.taken.action);
   // The engine's decision, for the policy change list: that is what a policy changes.
@@ -86,18 +90,19 @@
 
   function renderFeed() {
     rows = runAll(approved);
-    const { counts, cashSpend, fatigueCost: fatigueTotal, discountAvoided, discountAvoidedCases } = summarize(rows);
+    const { counts, cashSpend, discountAvoided, discountAvoidedCases } = summarize(rows);
 
     document.getElementById('summary').innerHTML = [
       ['Cases', rows.length, 'Contacted ' + counts.contact + ' · Hold ' + counts.hold + ' · Blocked ' + counts.blocked],
-      ['Cash spend', inr2(cashSpend), '+ ' + inr2(fatigueTotal) + ' notional fatigue cost'],
+      ['Cash spend', inr2(cashSpend), 'Messaging, calls and agent time actually paid'],
       ['Discount avoided', inr(discountAvoided), avoidedSub(discountAvoidedCases), true]
     ].map(([k, v, sub, key]) =>
       '<div class="card stat' + (key ? ' stat-key' : '') + '"><div class="k">' + k + '</div><div class="v">' + esc(v) + '</div>' +
       (sub ? '<div class="stat-sub">' + esc(sub) + '</div>' : '') + '</div>').join('');
 
     /* Filter tabs (by kind) */
-    const FILTERS = [['all', 'All', rows.length], ['contact', 'Contacted', counts.contact],
+    const FILTERS = [['all', 'All', rows.length], ['note', 'From the note', rows.filter(isNoteCase).length],
+                     ['contact', 'Contacted', counts.contact],
                      ['hold', 'Hold', counts.hold], ['blocked', 'Blocked', counts.blocked]];
     filterBar.innerHTML = FILTERS.map(([f, label, n]) =>
       '<button type="button" class="tab" data-kind="' + f + '">' + label +
@@ -136,7 +141,7 @@
       }
       const cost = cashCost(r);
       return (
-        '<div class="feed-row row-' + k + '" data-i="' + i + '" data-action="' + mixKey(r) + '" data-search="' + esc([c.id, c.item, c.bank || '', c.paymentMethod].join(' ').toLowerCase()) + '" tabindex="0" role="button">' +
+        '<div class="feed-row row-' + k + (isNoteCase(r) ? ' row-note' : '') + '" data-i="' + i + '" data-action="' + mixKey(r) + '" tabindex="0" role="button">' +
           '<div><div>' + ago(c.minutesAgo) + '</div><div class="sub">' + esc(c.id) + '</div></div>' +
           '<div><div class="order-val">' + inr(c.orderValue) + '</div><div class="sub">' + esc(method(c)) + '</div></div>' +
           '<div>' + esc(d.causeLabel) + '</div>' +
@@ -151,16 +156,13 @@
     applyFilter();
   }
 
-  const searchEl = document.getElementById('search');
   function applyFilter() {
-    const q = searchEl.value.trim().toLowerCase();
     let shown = 0;
     feed.querySelectorAll('.feed-row').forEach(r => {
       const byFilter = filter.type === 'kind'
         ? (filter.value === 'all' || r.classList.contains('row-' + filter.value))
         : r.dataset.action === filter.value;
-      const bySearch = !q || r.dataset.search.includes(q);
-      r.hidden = !(byFilter && bySearch);
+      r.hidden = !byFilter;
       if (!r.hidden) shown++;
     });
     document.getElementById('feed-empty').hidden = shown > 0;
@@ -175,10 +177,6 @@
     mixEl.classList.toggle('filtering', filter.type === 'action');
   }
 
-  searchEl.addEventListener('input', () => {
-    if (document.getElementById('view-feed').hidden) location.hash = '#feed';
-    applyFilter();
-  });
   filterBar.addEventListener('click', e => {
     const btn = e.target.closest('.tab');
     if (btn) { filter = { type: 'kind', value: btn.dataset.kind }; applyFilter(); }
@@ -298,8 +296,7 @@
     discountCeilingPct:              { min: 0,    max: 0.25,  step: 0.01 },
     contactBudgetPerCustomerPerWeek: { min: 0,    max: 7,     step: 1 },
     minOrderValueForVoice:           { min: 0,    max: 10000, step: 100 },
-    assumedMarginPct:                { min: 0.10, max: 0.60,  step: 0.01 },
-    contactFatigueCost:              { min: 0,    max: 40,    step: 1 }
+    assumedMarginPct:                { min: 0.10, max: 0.60,  step: 0.01 }
   };
   const asPct = v => Math.round(v * 100) + '%';
   const CHANGE_LIST_CAP = 8;
@@ -310,9 +307,7 @@
     { key: 'minOrderValueForVoice', label: 'Minimum order value for a voice call', fmt: inr,
       help: 'Calls cost more than messages, so small carts never get one.' },
     { key: 'assumedMarginPct', label: 'Assumed margin', fmt: asPct,
-      help: 'Razorpay does not hold your cost of goods, so you supply this. It sets what a recovered order is worth.' },
-    { key: 'contactFatigueCost', label: 'Contact fatigue cost', fmt: inr,
-      help: 'The expected future cost of contacting someone, through opt-outs and annoyance.' }
+      help: 'Razorpay does not hold your cost of goods, so you supply this. It sets what a recovered order is worth.' }
   ];
 
   const policyControls = document.getElementById('policy-controls');
@@ -359,7 +354,7 @@
       '<div class="card section"><h2>Limits</h2>' +
         slider(SLIDERS[0]) + stepper + slider(SLIDERS[1]) + '</div>' +
       '<div class="card section"><h2>Economics</h2>' +
-        slider(SLIDERS[2]) + slider(SLIDERS[3]) + '</div>';
+        slider(SLIDERS[2]) + '</div>';
   }
 
   function samePolicy(a, b) {
@@ -492,7 +487,6 @@
       { action: 'discount',      cases: 720,  spend: 27456, recoveries: 192 }
     ],
 
-    chartNote: 'Per-action rates are not lift. Each action goes to different kinds of cases. Per-action lift is estimated from the explore arm.',
     spendNote: 'Discount and free shipping are costed on recovered orders only: 10% margin and the ₹60 subsidy.',
     note: 'Simulated outcomes for demonstration. In production, these come from the randomised holdout.'
   };
@@ -528,32 +522,8 @@
       '<div class="card stat"><div class="k">' + k + '</div><div class="v">' + esc(v) + '</div>' +
       '<div class="stat-sub">' + esc(sub) + '</div></div>').join('');
 
-    /* Horizontal bars: recovery rate per action within the treated arm.
-       Axis runs to the next 10% above the highest rate. */
-    const rates = o.byAction.map(r => ({ action: r.action, rate: r.recoveries / r.cases }));
-    const axisMax = Math.ceil(Math.max(...rates.map(a => a.rate)) * 10) / 10;
-    const pos = r => (r / axisMax * 100) + '%';
-    const ticks = [];
-    for (let t = 0; t <= axisMax + 1e-9; t += 0.1) ticks.push(t);
-    const label = a => ACTION_LABEL[a];
-
-    document.getElementById('rate-chart').innerHTML =
-      '<div class="rc-rows">' +
-        rates.map(a =>
-          '<div class="rc-row">' +
-            '<div class="rc-label">' + esc(label(a.action)) + '</div>' +
-            '<div class="rc-track"><div class="rc-bar seg-' + a.action + '" style="width:' + pos(a.rate) + '"></div></div>' +
-            '<div class="rc-val"><strong>' + pct1(a.rate) + '</strong></div>' +
-          '</div>').join('') +
-        '<div class="rc-row rc-axis"><div></div><div class="rc-ticks">' +
-          ticks.map(t => '<span style="left:' + pos(t) + '">' + Math.round(t * 100) + '%</span>').join('') +
-        '</div><div></div></div>' +
-        '<div class="rc-baseline" style="--xf:' + (holdoutRate / axisMax) + '">' +
-          '<span>Holdout ' + pct1(holdoutRate) + '</span></div>' +
-      '</div>' +
-      '<p class="chart-note">' + esc(o.chartNote) + '</p>';
-
     /* Spend table. Cost per recovery shows a dash where nothing was spent. */
+    const label = a => ACTION_LABEL[a];
     const perRecovery = (spend, rec) => (spend > 0 && rec > 0) ? inr2(spend / rec) : '—';
     const num = n => n.toLocaleString('en-IN');
 
