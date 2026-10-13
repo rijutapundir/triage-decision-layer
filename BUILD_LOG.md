@@ -56,6 +56,13 @@ No external APIs or datasets are used in the prototype. All data is synthetic.
 ### Key prompts (shortened)
 
 <details>
+<summary><b>Researching targeted marketing and pricing</b> (Claude)</summary>
+
+> I'm designing a system that decides which failed checkouts a merchant should act on, and with what action (a reminder, a discount or a payment-method nudge). Find peer-reviewed research on targeting marketing and pricing interventions: should you target the customers most at risk, or the ones the action actually changes? Summarise the key papers, their findings and evidence, and how each applies to checkout recovery. Give full citations so I can check every source myself before citing it.
+
+</details>
+
+<details>
 <summary><b>Building a screen</b> (Claude Code)</summary>
 
 > Add the Outcomes tab. It shows whether Triage's actions are actually working, by comparing treated cases with the holdout (cases deliberately left untouched). Show four headline numbers: incremental recovery rate, incremental orders, net incremental revenue, cost per incremental order. Add recovery rate by action against the holdout baseline, and a spend table. Label all numbers as simulated. Do not change the Decision feed, Policy screen, engine.js or data.js.
