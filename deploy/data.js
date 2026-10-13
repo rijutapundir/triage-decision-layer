@@ -1,6 +1,7 @@
 /* =============================================================================
    TRIAGE - synthetic data
-   40 failed or abandoned Magic Checkout sessions for one D2C merchant.
+   42 failed or abandoned Magic Checkout sessions for one D2C merchant.
+   CHK-4100, CHK-4111, CHK-4140 and CHK-4141 are the four cases in the product note.
    SYNTHETIC. No real customer, order or merchant data is used anywhere.
    Values are plausible for an Indian D2C accessories brand.
    ============================================================================= */
@@ -24,7 +25,7 @@ const MERCHANT_POLICY = {
 };
 
 /* Defaults the merchant can change on the Policy screen. Changing any of
-   these re-runs the engine over all 40 cases. */
+   these re-runs the engine over every case. */
 const DEFAULT_POLICY = JSON.parse(JSON.stringify(MERCHANT_POLICY));
 
 const CASES = [
@@ -32,7 +33,7 @@ const CASES = [
     "id": "CHK-4100",
     "minutesAgo": 26,
     "item": "Travel pouch",
-    "orderValue": 679,
+    "orderValue": 680,
     "paymentMethod": "upi",
     "bank": "PhonePe",
     "failureCode": "UPI_TIMEOUT",
@@ -284,7 +285,7 @@ const CASES = [
     "id": "CHK-4111",
     "minutesAgo": 140,
     "item": "Beanie",
-    "orderValue": 6399,
+    "orderValue": 6400,
     "paymentMethod": "card",
     "bank": "HDFC",
     "failureCode": "BANK_DECLINE",
@@ -940,6 +941,52 @@ const CASES = [
     "hasOptedOut": false,
     "contactsThisWeek": 0,
     "holdoutSeed": 0.052
+  },
+  {
+    "id": "CHK-4140",
+    "minutesAgo": 12,
+    "item": "Cotton tote bag",
+    "orderValue": 499,
+    "paymentMethod": "upi",
+    "bank": "Paytm",
+    "failureCode": "NO_ATTEMPT",
+    "sessionEndStage": "shipping",
+    "isRepeatBuyer": false,
+    "priorOrders": 0,
+    "couponApplied": false,
+    "codRiskScore": 0.1,
+    "consentedChannels": [
+      "whatsapp",
+      "push",
+      "voice",
+      "email"
+    ],
+    "hasOptedOut": false,
+    "contactsThisWeek": 0,
+    "holdoutSeed": 0.712
+  },
+  {
+    "id": "CHK-4141",
+    "minutesAgo": 47,
+    "item": "Ceramic planter set",
+    "orderValue": 2900,
+    "paymentMethod": "card",
+    "bank": "Axis",
+    "failureCode": "NO_ATTEMPT",
+    "sessionEndStage": "shipping",
+    "isRepeatBuyer": true,
+    "priorOrders": 2,
+    "couponApplied": false,
+    "codRiskScore": 0.1,
+    "consentedChannels": [
+      "whatsapp",
+      "push",
+      "voice",
+      "email"
+    ],
+    "hasOptedOut": false,
+    "contactsThisWeek": 0,
+    "holdoutSeed": 0.641
   }
 ];
 

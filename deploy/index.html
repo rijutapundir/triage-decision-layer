@@ -12,10 +12,8 @@
       <div class="brand">Triage</div>
       <div class="merchant" id="merchant-name"></div>
       <div class="topbar-right">
-        <label class="search">
-          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="9" cy="9" r="6"/><path d="M13.5 13.5 17 17"/></svg>
-          <input type="search" id="search" placeholder="Search cases by ID, item or bank" aria-label="Search cases">
-        </label>
+        <button type="button" class="pause-btn sim-btn" id="outage" aria-pressed="false">Simulate HDFC outage</button>
+        <button type="button" class="pause-btn" id="pause" aria-pressed="false">Pause recovery</button>
         <span class="badge"><span class="badge-full">Prototype, synthetic data</span><span class="badge-short">Synthetic</span></span>
         <span class="avatar" id="avatar" aria-hidden="true"></span>
       </div>
@@ -29,8 +27,12 @@
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h9"/></svg>Decision feed</a>
           <a class="nav-item" href="#policy" data-view="policy">
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5 16 5v4.5c0 3.7-2.6 6.6-6 8-3.4-1.4-6-4.3-6-8V5z"/><path d="m7.5 10 1.8 1.8L13 8"/></svg>Policy</a>
+          <a class="nav-item" href="#audit" data-view="audit">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3h10v14H5z"/><path d="M8 7h4M8 10h4M8 13h2"/></svg>Audit log</a>
 
           <div class="nav-section">Measurement</div>
+          <a class="nav-item" href="#proof" data-view="proof">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 16h14"/><path d="m4 12 4-4 3 3 5-6"/></svg>Proof</a>
           <a class="nav-item" href="#outcomes" data-view="outcomes">
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 16h14M5 13V9M10 13V5M15 13V7"/></svg>Outcomes</a>
           <a class="nav-item" href="#holdout" data-view="holdout">
@@ -41,6 +43,14 @@
       <main class="main">
         <div class="content">
           <section class="view" id="view-feed">
+            <div class="card hero">
+              <div class="hero-kicker">A decision layer between a failed checkout and Agent Studio's cart recovery agent</div>
+              <p class="hero-line">Triage starts every merchant on the best default rule, and takes over only where a holdout proves it earns more.</p>
+              <div class="hero-foot" id="hero-foot"></div>
+            </div>
+
+            <div class="banner" id="feed-banner" role="status" hidden></div>
+
             <div class="page-head">
               <div>
                 <h1>Decision feed</h1>
@@ -91,24 +101,57 @@
             </div>
           </section>
 
+          <section class="view" id="view-audit" hidden>
+            <div class="page-head">
+              <div>
+                <h1>Audit log</h1>
+                <p class="muted">Every change a merchant makes, newest first. This prototype keeps it for this session only; in production it is stored with every decision.</p>
+              </div>
+            </div>
+            <div class="card">
+              <table class="data-table" id="audit-table"></table>
+            </div>
+          </section>
+
+          <section class="view" id="view-proof" hidden>
+            <div class="page-head">
+              <div>
+                <h1>Proof: no single default fits every merchant</h1>
+                <p class="muted proof-method">Triage's decisions are made with noisy lift estimates (early: high noise, 10% explore; mature: lower noise, 5% explore) and scored against each merchant's true response.</p>
+              </div>
+              <span class="sim-pill">Simulated</span>
+            </div>
+
+            <div class="card proof-card">
+              <div class="card-head">
+                <h2>Net margin vs each merchant's best fixed rule in hindsight</h2>
+                <p class="muted">Behind a holdout, Triage matches or beats the default at every merchant.</p>
+              </div>
+              <div class="table-scroll"><table class="data-table proof-table" id="proof-table"></table></div>
+              <p class="table-foot" id="proof-foot"></p>
+            </div>
+
+            <div class="card proof-card">
+              <div class="card-head">
+                <h2>Six fixed rules, scored at each merchant</h2>
+                <p class="muted">No one rule is best everywhere: the default is the best rule at electronics but reaches only 75% at beauty. Coupons for every failure lose money at electronics.</p>
+              </div>
+              <div class="table-scroll"><table class="data-table proof-table" id="rules-table"></table></div>
+            </div>
+
+            <div id="handover"></div>
+          </section>
+
           <section class="view" id="view-outcomes" hidden>
             <div class="page-head">
               <div>
-                <h1>Outcomes</h1>
-                <p class="muted">30-day pilot, simulated.</p>
+                <h1>Simulated 30-day pilot (aggregate)</h1>
+                <p class="muted">Fixed illustrative totals for a merchant like Kaara Living, not computed from today's feed.</p>
               </div>
               <span class="sim-pill">Simulated</span>
             </div>
 
             <div class="summary" id="outcome-stats"></div>
-
-            <div class="card chart-card">
-              <div class="card-head">
-                <h2>Recovery rate by action</h2>
-                <p class="muted">Share of cases that went on to pay, compared with the holdout that received no contact.</p>
-              </div>
-              <div class="rate-chart" id="rate-chart"></div>
-            </div>
 
             <div class="card spend-card">
               <div class="card-head">
@@ -164,6 +207,7 @@
 
   <script src="data.js"></script>
   <script src="engine.js"></script>
+  <script src="sim.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

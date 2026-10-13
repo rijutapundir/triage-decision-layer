@@ -1,6 +1,6 @@
 /* =============================================================================
    TRIAGE - app
-   Four views: Decision feed, Policy, Outcomes, Holdout. Every case runs through
+   Five views: Decision feed, Policy, Proof, Outcomes, Holdout. Every case runs through
    resolveCase() in engine.js, which applies decide() and the holdout/explore
    arms in one place. Only Outcomes and the pilot-size card use fixed numbers.
    ============================================================================= */
@@ -45,16 +45,40 @@
     return r.taken.action === 'hold' ? 'hold' : 'contact';
   }
 
+  // The four worked examples in the product note.
+  const NOTE_CASE_IDS = ['CHK-4100', 'CHK-4111', 'CHK-4140', 'CHK-4141'];
+  const isNoteCase = r => NOTE_CASE_IDS.includes(r.c.id);
+
   // Mix key: the action actually taken, or 'blocked' when a gate stopped it.
   const mixKey = r => (r.d.blocked ? 'blocked' : r.taken.action);
   // The engine's decision, for the policy change list: that is what a policy changes.
   const decisionKey   = d => (d.blocked ? 'blocked' : d.chosen.action);
   const decisionLabel = d => (d.blocked ? gateLabel(d) : d.chosen.label);
 
+  /* ---------- Merchant control: overrides, pause, audit log ----------
+     Applied on top of the engine, never inside it. An overridden case leaves
+     the holdout and explore arms: overrides may teach diagnosis, never lift. */
+  const overrides = {};          // caseId -> action the merchant chose
+  let paused = false;
+  const audit = [];
+  function logEvent(who, what) {
+    audit.unshift({ at: new Date(), who, what });
+    if (!document.getElementById('view-audit').hidden) renderAudit();
+  }
+
+  function applyMerchant(r) {
+    if (r.d.blocked) return r;
+    const hold = r.d.scored.find(s => s.action === 'hold');
+    if (paused) return { ...r, arm: 'paused', taken: hold };
+    const o = overrides[r.c.id];
+    if (o) return { ...r, arm: 'override', taken: r.d.scored.find(s => s.action === o) || hold };
+    return r;
+  }
+
   /* ---------- Engine runs ---------- */
   function runAll(policy) {
     return CASES
-      .map(c => resolveCase(c, policy, context))
+      .map(c => applyMerchant(resolveCase(c, policy, context)))
       .sort((a, b) => a.c.minutesAgo - b.c.minutesAgo);
   }
   /* Cash is what is actually paid at contact time: messaging, telephony, agent
@@ -86,18 +110,19 @@
 
   function renderFeed() {
     rows = runAll(approved);
-    const { counts, cashSpend, fatigueCost: fatigueTotal, discountAvoided, discountAvoidedCases } = summarize(rows);
+    const { counts, cashSpend, discountAvoided, discountAvoidedCases } = summarize(rows);
 
     document.getElementById('summary').innerHTML = [
       ['Cases', rows.length, 'Contacted ' + counts.contact + ' · Hold ' + counts.hold + ' · Blocked ' + counts.blocked],
-      ['Cash spend', inr2(cashSpend), '+ ' + inr2(fatigueTotal) + ' notional fatigue cost'],
+      ['Cash spend', inr2(cashSpend), 'Messaging, calls and agent time actually paid'],
       ['Discount avoided', inr(discountAvoided), avoidedSub(discountAvoidedCases), true]
     ].map(([k, v, sub, key]) =>
       '<div class="card stat' + (key ? ' stat-key' : '') + '"><div class="k">' + k + '</div><div class="v">' + esc(v) + '</div>' +
       (sub ? '<div class="stat-sub">' + esc(sub) + '</div>' : '') + '</div>').join('');
 
     /* Filter tabs (by kind) */
-    const FILTERS = [['all', 'All', rows.length], ['contact', 'Contacted', counts.contact],
+    const FILTERS = [['all', 'All', rows.length], ['note', 'From the note', rows.filter(isNoteCase).length],
+                     ['contact', 'Contacted', counts.contact],
                      ['hold', 'Hold', counts.hold], ['blocked', 'Blocked', counts.blocked]];
     filterBar.innerHTML = FILTERS.map(([f, label, n]) =>
       '<button type="button" class="tab" data-kind="' + f + '">' + label +
@@ -133,10 +158,16 @@
       } else if (arm === 'explore') {
         actionText = taken.label + ' (explore)';
         pickLine = 'Engine pick: ' + d.chosen.label;
+      } else if (arm === 'override') {
+        actionText = taken.label + ' (your override)';
+        pickLine = 'Engine pick: ' + d.chosen.label;
+      } else if (arm === 'paused') {
+        actionText = ACTION_LABEL.hold + ' (paused)';
+        pickLine = 'Engine pick: ' + d.chosen.label;
       }
       const cost = cashCost(r);
       return (
-        '<div class="feed-row row-' + k + '" data-i="' + i + '" data-action="' + mixKey(r) + '" data-search="' + esc([c.id, c.item, c.bank || '', c.paymentMethod].join(' ').toLowerCase()) + '" tabindex="0" role="button">' +
+        '<div class="feed-row row-' + k + (isNoteCase(r) ? ' row-note' : '') + '" data-i="' + i + '" data-action="' + mixKey(r) + '" tabindex="0" role="button">' +
           '<div><div>' + ago(c.minutesAgo) + '</div><div class="sub">' + esc(c.id) + '</div></div>' +
           '<div><div class="order-val">' + inr(c.orderValue) + '</div><div class="sub">' + esc(method(c)) + '</div></div>' +
           '<div>' + esc(d.causeLabel) + '</div>' +
@@ -151,16 +182,13 @@
     applyFilter();
   }
 
-  const searchEl = document.getElementById('search');
   function applyFilter() {
-    const q = searchEl.value.trim().toLowerCase();
     let shown = 0;
     feed.querySelectorAll('.feed-row').forEach(r => {
       const byFilter = filter.type === 'kind'
         ? (filter.value === 'all' || r.classList.contains('row-' + filter.value))
         : r.dataset.action === filter.value;
-      const bySearch = !q || r.dataset.search.includes(q);
-      r.hidden = !(byFilter && bySearch);
+      r.hidden = !byFilter;
       if (!r.hidden) shown++;
     });
     document.getElementById('feed-empty').hidden = shown > 0;
@@ -175,10 +203,6 @@
     mixEl.classList.toggle('filtering', filter.type === 'action');
   }
 
-  searchEl.addEventListener('input', () => {
-    if (document.getElementById('view-feed').hidden) location.hash = '#feed';
-    applyFilter();
-  });
   filterBar.addEventListener('click', e => {
     const btn = e.target.closest('.tab');
     if (btn) { filter = { type: 'kind', value: btn.dataset.kind }; applyFilter(); }
@@ -252,8 +276,14 @@
           : arm === 'explore'
           ? '<div class="arm-note"><strong>Explore.</strong> This case gets ' + esc(taken.label.toLowerCase()) +
             ' at random (' + inr2(ACTION_COSTS[taken.action]) + ' cash), so per-action lift can be estimated.</div>'
+          : arm === 'override'
+          ? '<div class="arm-note"><strong>Your override.</strong> This case gets ' + esc(taken.label.toLowerCase()) +
+            '. It leaves the holdout measurement: overrides can teach diagnosis, never lift.</div>'
+          : arm === 'paused'
+          ? '<div class="arm-note"><strong>Recovery paused.</strong> No customer is contacted until you resume.</div>'
           : '') +
       '</div>' +
+      overrideHtml(rows[i]) +
       '<h3>Case</h3>' +
       '<div class="facts">' + facts.map(([k, v]) =>
         '<div><div class="k">' + k + '</div><div class="v">' + esc(v) + '</div></div>').join('') + '</div>' +
@@ -267,6 +297,79 @@
     panel.classList.add('open');
     shell.classList.add('panel-open');
     panel.setAttribute('aria-hidden', 'false');
+  }
+
+  function overrideHtml({ c, d }) {
+    if (d.blocked) {
+      return '<h3>Your call</h3><p class="note">A gate stopped contact for this customer, so it cannot be overridden.</p>';
+    }
+    const cur = overrides[c.id] || '';
+    const opts = '<option value="">Triage\'s decision: ' + esc(d.chosen.label) + '</option>' +
+      d.scored.filter(s => s.allowed && s.action !== d.chosen.action).map(s =>
+        '<option value="' + s.action + '"' + (cur === s.action ? ' selected' : '') + '>' + esc(s.label) + '</option>').join('');
+    return '<h3>Your call</h3>' +
+      '<label class="override"><span>Override this decision</span><select id="override" data-case="' + esc(c.id) + '">' + opts + '</select></label>' +
+      '<p class="note">Only actions your policy allows are offered. Every override is logged.</p>';
+  }
+
+  document.getElementById('detail-body').addEventListener('change', e => {
+    if (e.target.id !== 'override') return;
+    const id = e.target.dataset.case, v = e.target.value;
+    const r = rows.find(x => x.c.id === id);
+    if (v) { overrides[id] = v; logEvent('Merchant', 'Overrode ' + id + ': ' + r.d.chosen.label + ' → ' + ACTION_LABEL[v]); }
+    else   { delete overrides[id]; logEvent('Merchant', 'Cleared override on ' + id + ', back to ' + r.d.chosen.label); }
+    refresh();
+    open(rows.findIndex(x => x.c.id === id));
+  });
+
+  /* Re-render whatever depends on the merchant layer. */
+  function refresh() {
+    renderFeed();
+    renderBanner();
+    const v = viewFromHash();
+    if (v === 'holdout') renderHoldout();
+  }
+
+  function renderBanner() {
+    const el = document.getElementById('feed-banner');
+    const pauseBtn = document.getElementById('pause');
+    pauseBtn.textContent = paused ? 'Resume recovery' : 'Pause recovery';
+    pauseBtn.setAttribute('aria-pressed', paused);
+    pauseBtn.classList.toggle('on', paused);
+    const msgs = [];
+    if (context.systemicFailure) {
+      const n = rows.filter(r => r.d.blocked && r.d.gate.kind === 'systemic').length;
+      msgs.push('<strong>Alert: failures are clustered at ' + esc(context.systemicFailureKey) + '.</strong> ' +
+        'This looks like a bank outage, not ' + n + ' customers changing their minds. Outreach to these ' + n +
+        ' cases has stopped; they are marked "Blocked, outage" below.');
+    }
+    if (paused) msgs.push('<strong>Recovery paused.</strong> Triage still decides and logs every case, but no customer is contacted until you resume.');
+    el.innerHTML = msgs.map(m => '<p>' + m + '</p>').join('');
+    el.hidden = !msgs.length;
+  }
+
+  document.getElementById('outage').addEventListener('click', () => {
+    context.systemicFailure = !context.systemicFailure;
+    const btn = document.getElementById('outage');
+    btn.textContent = context.systemicFailure ? 'End HDFC outage' : 'Simulate HDFC outage';
+    btn.setAttribute('aria-pressed', context.systemicFailure);
+    btn.classList.toggle('on', context.systemicFailure);
+    logEvent('Merchant', (context.systemicFailure ? 'Started' : 'Ended') + ' a simulated ' + context.systemicFailureKey + ' outage');
+    if (context.systemicFailure) logEvent('Triage', 'Failures clustered at ' + context.systemicFailureKey + ': outreach to those cases stopped, merchant alerted');
+    refresh();
+  });
+
+  document.getElementById('pause').addEventListener('click', () => {
+    paused = !paused;
+    logEvent('Merchant', paused ? 'Paused all recovery' : 'Resumed recovery');
+    refresh();
+  });
+
+  function renderAudit() {
+    const t = document.getElementById('audit-table');
+    t.innerHTML = '<thead><tr><th>Time</th><th>Who</th><th>What</th></tr></thead><tbody>' +
+      audit.map(a => '<tr><td>' + esc(a.at.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })) +
+        '</td><td>' + esc(a.who) + '</td><td>' + esc(a.what) + '</td></tr>').join('') + '</tbody>';
   }
 
   function close() {
@@ -298,8 +401,7 @@
     discountCeilingPct:              { min: 0,    max: 0.25,  step: 0.01 },
     contactBudgetPerCustomerPerWeek: { min: 0,    max: 7,     step: 1 },
     minOrderValueForVoice:           { min: 0,    max: 10000, step: 100 },
-    assumedMarginPct:                { min: 0.10, max: 0.60,  step: 0.01 },
-    contactFatigueCost:              { min: 0,    max: 40,    step: 1 }
+    assumedMarginPct:                { min: 0.10, max: 0.60,  step: 0.01 }
   };
   const asPct = v => Math.round(v * 100) + '%';
   const CHANGE_LIST_CAP = 8;
@@ -310,9 +412,7 @@
     { key: 'minOrderValueForVoice', label: 'Minimum order value for a voice call', fmt: inr,
       help: 'Calls cost more than messages, so small carts never get one.' },
     { key: 'assumedMarginPct', label: 'Assumed margin', fmt: asPct,
-      help: 'Razorpay does not hold your cost of goods, so you supply this. It sets what a recovered order is worth.' },
-    { key: 'contactFatigueCost', label: 'Contact fatigue cost', fmt: inr,
-      help: 'The expected future cost of contacting someone, through opt-outs and annoyance.' }
+      help: 'Razorpay does not hold your cost of goods, so you supply this. It sets what a recovered order is worth.' }
   ];
 
   const policyControls = document.getElementById('policy-controls');
@@ -359,7 +459,7 @@
       '<div class="card section"><h2>Limits</h2>' +
         slider(SLIDERS[0]) + stepper + slider(SLIDERS[1]) + '</div>' +
       '<div class="card section"><h2>Economics</h2>' +
-        slider(SLIDERS[2]) + slider(SLIDERS[3]) + '</div>';
+        slider(SLIDERS[2]) + '</div>';
   }
 
   function samePolicy(a, b) {
@@ -455,6 +555,11 @@
   });
 
   document.getElementById('approve').addEventListener('click', () => {
+    const changes = Object.keys(draft).filter(k => k !== 'allowedActions' && draft[k] !== approved[k])
+      .map(k => k + ' ' + approved[k] + ' → ' + draft[k]);
+    const on  = draft.allowedActions.filter(a => !approved.allowedActions.includes(a)).map(a => ACTION_LABEL[a] + ' on');
+    const off = approved.allowedActions.filter(a => !draft.allowedActions.includes(a)).map(a => ACTION_LABEL[a] + ' off');
+    logEvent('Merchant', 'Approved policy: ' + (on.concat(off, changes).join(', ') || 'no changes'));
     approved = clone(draft);
     renderFeed();
     renderImpact();
@@ -492,7 +597,6 @@
       { action: 'discount',      cases: 720,  spend: 27456, recoveries: 192 }
     ],
 
-    chartNote: 'Per-action rates are not lift. Each action goes to different kinds of cases. Per-action lift is estimated from the explore arm.',
     spendNote: 'Discount and free shipping are costed on recovered orders only: 10% margin and the ₹60 subsidy.',
     note: 'Simulated outcomes for demonstration. In production, these come from the randomised holdout.'
   };
@@ -528,32 +632,8 @@
       '<div class="card stat"><div class="k">' + k + '</div><div class="v">' + esc(v) + '</div>' +
       '<div class="stat-sub">' + esc(sub) + '</div></div>').join('');
 
-    /* Horizontal bars: recovery rate per action within the treated arm.
-       Axis runs to the next 10% above the highest rate. */
-    const rates = o.byAction.map(r => ({ action: r.action, rate: r.recoveries / r.cases }));
-    const axisMax = Math.ceil(Math.max(...rates.map(a => a.rate)) * 10) / 10;
-    const pos = r => (r / axisMax * 100) + '%';
-    const ticks = [];
-    for (let t = 0; t <= axisMax + 1e-9; t += 0.1) ticks.push(t);
-    const label = a => ACTION_LABEL[a];
-
-    document.getElementById('rate-chart').innerHTML =
-      '<div class="rc-rows">' +
-        rates.map(a =>
-          '<div class="rc-row">' +
-            '<div class="rc-label">' + esc(label(a.action)) + '</div>' +
-            '<div class="rc-track"><div class="rc-bar seg-' + a.action + '" style="width:' + pos(a.rate) + '"></div></div>' +
-            '<div class="rc-val"><strong>' + pct1(a.rate) + '</strong></div>' +
-          '</div>').join('') +
-        '<div class="rc-row rc-axis"><div></div><div class="rc-ticks">' +
-          ticks.map(t => '<span style="left:' + pos(t) + '">' + Math.round(t * 100) + '%</span>').join('') +
-        '</div><div></div></div>' +
-        '<div class="rc-baseline" style="--xf:' + (holdoutRate / axisMax) + '">' +
-          '<span>Holdout ' + pct1(holdoutRate) + '</span></div>' +
-      '</div>' +
-      '<p class="chart-note">' + esc(o.chartNote) + '</p>';
-
     /* Spend table. Cost per recovery shows a dash where nothing was spent. */
+    const label = a => ACTION_LABEL[a];
     const perRecovery = (spend, rec) => (spend > 0 && rec > 0) ? inr2(spend / rec) : '—';
     const num = n => n.toLocaleString('en-IN');
 
@@ -636,9 +716,153 @@
   });
 
   /* =========================================================================
+     PROOF
+     The seeded simulation behind the note's PROOF table (sim.js), run in a
+     Web Worker at page load. Nothing on this view is typed in by hand.
+     ========================================================================= */
+  let proof = null;
+  const PROOF_ROWS = [
+    ['defaultPct', 'Best single default: link to all, call above ₹1,500'],
+    ['earlyPct',   'Triage alone, first weeks, 10% explore'],
+    ['maturePct',  'Triage alone, estimates mature, 5% explore'],
+    ['shippedPct', 'As shipped: Triage only where it wins', 'shipped']
+  ];
+  const shortName = n => n.replace(' (Kaara-like)', ', Kaara-like');
+  const pctCell = (v, extra) => '<td class="num' + (v < 90 ? ' amber' : '') + (extra || '') + '">' + v + '%</td>';
+
+  function renderProof() {
+    const table = document.getElementById('proof-table');
+    if (!proof) {
+      table.innerHTML = '<tbody><tr><td class="empty">Running 16,000 simulated checkouts in your browser…</td></tr></tbody>';
+      return;
+    }
+    const ms = proof.merchants;
+    table.innerHTML =
+      '<thead><tr><th>vs best fixed rule in hindsight</th>' + ms.map(m => '<th class="num">' + esc(shortName(m.name)) + '</th>').join('') +
+      '<th class="num">Worst</th></tr></thead><tbody>' +
+      PROOF_ROWS.map(([k, label, cls]) =>
+        '<tr' + (cls ? ' class="' + cls + '"' : '') + '><td>' + esc(label) + '</td>' +
+        ms.map(m => pctCell(m[k])).join('') +
+        pctCell(Math.min(...ms.map(m => m[k]))) + '</tr>').join('') +
+      '</tbody>';
+    document.getElementById('proof-foot').textContent =
+      '2,000 synthetic checkouts per merchant (seed 7), each merchant with its own true response: lifts vary by merchant (sd 0.4). ' +
+      '100% = the best of six fixed rules for that merchant, picked in hindsight; over 100% = more net margin than that rule; amber = below 90%. ' +
+      'Triage gets no thresholds and pays for noise and exploring. Net margin excludes the notional fatigue cost. ' +
+      'As shipped: Triage where it beats the default (' + ms.filter(m => m.triageWins).map(m => shortName(m.name)).join('; ') +
+      '), the default elsewhere. Computed in your browser in ' + (proof.ms / 1000).toFixed(1) + 's.';
+
+    document.getElementById('rules-table').innerHTML =
+      '<thead><tr><th>Fixed rule</th>' + ms.map(m => '<th class="num">' + esc(shortName(m.name)) + '</th>').join('') + '</tr></thead><tbody>' +
+      proof.rules.map(r => '<tr' + (r === proof.defaultRule ? ' class="is-default"' : '') + '><td>' + esc(r) +
+        (r === proof.defaultRule ? '<span class="tag">Default</span>' : '') + '</td>' +
+        ms.map(m => '<td class="num' + (m.bestRule === r ? ' best' : '') + (m.rulePct[r] < 0 ? ' neg' : '') + '">' +
+          (m.rulePct[r] < 0 ? '−' + Math.abs(m.rulePct[r]) : m.rulePct[r]) + '%</td>').join('') + '</tr>').join('') +
+      '</tbody>';
+  }
+
+  function renderHero() {
+    const foot = document.getElementById('hero-foot');
+    if (!proof) { foot.innerHTML = '<span class="muted">Running the proof simulation…</span>'; return; }
+    const range = k => { const v = proof.merchants.map(m => m[k]); return Math.min(...v) + '–' + Math.max(...v) + '%'; };
+    foot.innerHTML =
+      '<span>Across four simulated merchant types, the best single default reaches <strong>' + range('defaultPct') +
+      '</strong> of each one\'s best fixed rule. As shipped, Triage reaches <strong>' + range('shippedPct') + '</strong>.</span>' +
+      '<a href="#proof">See the proof →</a>';
+    const k = handover && handover.merchants.find(m => m.name === KAARA);
+    if (k) {
+      const st = status(k);
+      foot.insertAdjacentHTML('afterbegin', '<span class="mode-chip mode-' + st.cls + '">' +
+        (k.takeoverWeek ? 'Running: Triage' : 'Running: best default') + '</span>');
+      foot.insertAdjacentHTML('beforeend', '<span class="hero-mode">' + esc(approved.merchantName + ', simulated as home decor. ' + st.text) + '</span>');
+    }
+  }
+
+  /* ---------- Handover timeline ----------
+     One small chart per merchant: weekly net margin of Triage and of the
+     default, as % of that merchant's best fixed rule. Shaded weeks = Triage
+     running, which starts only once the holdout's lower bound clears zero. */
+  let handover = null;
+  const KAARA = 'Home decor (Kaara-like)';
+
+  function status(m) {
+    if (m.takeoverWeek) return { cls: 'on', text: 'Triage takes over in week ' + m.takeoverWeek + ', once the holdout proves it ahead.' };
+    if (m.provenBehindWeek) return { cls: 'off', text: 'Stays on the default. From week ' + m.provenBehindWeek + ' the holdout shows Triage behind it.' };
+    const last = m.weeks[m.weeks.length - 1];
+    return { cls: 'wait', text: 'Still on the default at week ' + last.week + ': Triage looks ahead, but the holdout has not proved it (lower bound ' +
+      last.diffLoPct.toFixed(1) + '%).' };
+  }
+
+  function miniChart(m) {
+    const W = 300, H = 150, L = 34, R = 8, T = 10, B = 24;
+    const n = m.weeks.length, lo = 60, hi = 130;
+    const x = w => L + (w - 0.5) * (W - L - R) / n;
+    const y = v => T + (hi - Math.max(lo, Math.min(hi, v))) * (H - T - B) / (hi - lo);
+    const bw = (W - L - R) / n;
+    const shade = m.weeks.filter(w => w.running === 'triage')
+      .map(w => '<rect class="hv-on" x="' + (x(w.week) - bw / 2) + '" y="' + T + '" width="' + bw + '" height="' + (H - T - B) + '"/>').join('');
+    const grid = [70, 100, 130].map(v => '<line class="hv-grid" x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '"/>' +
+      '<text class="hv-tick" x="' + (L - 4) + '" y="' + (y(v) + 3) + '">' + v + '%</text>').join('');
+    const line = k => m.weeks.map((w, i) => (i ? 'L' : 'M') + x(w.week).toFixed(1) + ' ' + y(w[k]).toFixed(1)).join(' ');
+    const xt = m.weeks.map(w => '<text class="hv-tick hv-x" x="' + x(w.week) + '" y="' + (H - 8) + '">' + w.week + '</text>').join('');
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(m.name + ': ' + status(m).text) + '">' +
+      shade + grid + xt +
+      '<path class="hv-default" d="' + line('defaultPct') + '"/>' +
+      '<path class="hv-triage" d="' + line('triagePct') + '"/>' +
+      m.weeks.map(w => '<circle class="hv-dot" cx="' + x(w.week) + '" cy="' + y(w.triagePct) + '" r="2.5"/>').join('') +
+      '</svg>';
+  }
+
+  function renderHandover() {
+    const el = document.getElementById('handover');
+    if (!handover) { el.innerHTML = ''; return; }
+    el.innerHTML =
+      '<div class="card proof-card">' +
+        '<div class="card-head"><h2>Handover: the default runs until a holdout proves Triage ahead</h2>' +
+          '<p class="muted">Net margin per week as % of each merchant\'s best fixed rule. ' +
+          '<span class="hv-key hv-key-triage"></span>Triage <span class="hv-key hv-key-default"></span>Default ' +
+          '<span class="hv-key hv-key-on"></span>Triage running</p></div>' +
+        '<div class="hv-grid-wrap">' + handover.merchants.map(m => {
+          const st = status(m);
+          return '<div class="hv-cell"><div class="hv-name">' + esc(shortName(m.name)) + '</div>' + miniChart(m) +
+            '<p class="hv-status st-' + st.cls + '">' + esc(st.text) + '</p></div>';
+        }).join('') + '</div>' +
+        '<p class="table-foot">Same merchants, checkouts and true response as the table above. Triage\'s lift estimates get less noisy each week ' +
+          '(sd 0.35 in week 1 to 0.15 in week ' + handover.weeks + ') and explore falls from 10% to 5%. Each week ' +
+          handover.perWeek.toLocaleString('en-IN') + ' failed checkouts are split half to Triage, half to the default. ' +
+          'Triage takes over when the lower 95% bound of its advantage, pooled over the weeks so far, clears zero. ' +
+          'The bound comes from each checkout\'s pay-or-not outcome noise. Weekly points use two noisy estimate draws, so they wobble. ' +
+          'Computed in your browser in ' + (handover.ms / 1000).toFixed(1) + 's.</p>' +
+      '</div>';
+  }
+
+  function proofReady(msg) {
+    if (msg.kind === 'proof') proof = msg.result;
+    if (msg.kind === 'handover') handover = msg.result;
+    renderHero();
+    if (viewFromHash() === 'proof') { renderProof(); renderHandover(); }
+  }
+
+  function startProof() {
+    try {
+      const w = new Worker('proof-worker.js');
+      w.onmessage = e => { proofReady(e.data); if (e.data.kind === 'handover') w.terminate(); };
+      w.onerror = e => { e.preventDefault(); w.terminate(); runProofHere(); };
+    } catch (err) { runProofHere(); }
+  }
+  /* Fallback when workers are unavailable (e.g. opened from file://). sim.js
+     restores LIFT_TABLE before returning, and nothing renders mid-run. */
+  function runProofHere() {
+    const sim = makeSim({ MERCHANT_POLICY, decide, scoreAction, checkGates, isAllowed, LIFT_TABLE, LADDER,
+                          diagnose, SHIPPING_SUBSIDY });
+    const timed = (kind, fn) => { const t0 = Date.now(); const r = fn(); r.ms = Date.now() - t0; proofReady({ kind, result: r }); };
+    setTimeout(() => { timed('proof', sim.proof); setTimeout(() => timed('handover', sim.handover), 50); }, 50);
+  }
+
+  /* =========================================================================
      NAVIGATION
      ========================================================================= */
-  const VIEWS = { feed: 'Decision feed', policy: 'Policy', outcomes: 'Outcomes', holdout: 'Holdout' };
+  const VIEWS = { feed: 'Decision feed', policy: 'Policy', audit: 'Audit log', proof: 'Proof', outcomes: 'Outcomes', holdout: 'Holdout' };
   const viewFromHash = () => {
     const v = location.hash.replace(/^#/, '');
     return VIEWS[v] ? v : 'feed';
@@ -653,6 +877,8 @@
     });
     close();
     if (view === 'policy') renderPolicy();
+    if (view === 'audit') renderAudit();
+    if (view === 'proof') { renderProof(); renderHandover(); }
     if (view === 'outcomes') renderOutcomes();
     if (view === 'holdout') renderHoldout();
     document.querySelector('.content').scrollTop = 0;
@@ -663,6 +889,11 @@
   // and Back / Forward / refresh all land on the right view.
   window.addEventListener('hashchange', () => show(viewFromHash()));
 
+  logEvent('Triage', 'Session started. ' + CASES.length + ' cases decided under the approved policy; holdout ' +
+    Math.round(approved.holdoutShare * 100) + '%, explore ' + Math.round(approved.exploreShare * 100) + '%');
   renderFeed();
+  renderBanner();
+  renderHero();
   show(viewFromHash());
+  startProof();
 })();
