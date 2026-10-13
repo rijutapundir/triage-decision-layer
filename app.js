@@ -297,6 +297,7 @@
 
     panel.classList.add('open');
     shell.classList.add('panel-open');
+    lockPage(true);
     panel.setAttribute('aria-hidden', 'false');
   }
 
@@ -377,9 +378,28 @@
         '</td><td>' + esc(a.who) + '</td><td>' + esc(a.what) + '</td></tr>').join('') + '</tbody>';
   }
 
+  /* Phones: the case panel is full screen, so pin the page behind it.
+     position:fixed holds on iOS Safari, where overflow:hidden alone does not. */
+  const phone = window.matchMedia('(max-width: 767px)');
+  let lockedAt = null;
+  function lockPage(on) {
+    const b = document.body.style;
+    if (on && phone.matches && lockedAt === null) {
+      lockedAt = window.scrollY;
+      document.documentElement.classList.add('panel-lock');
+      b.position = 'fixed'; b.top = -lockedAt + 'px'; b.left = '0'; b.right = '0';
+    } else if (!on && lockedAt !== null) {
+      document.documentElement.classList.remove('panel-lock');
+      b.position = b.top = b.left = b.right = '';
+      window.scrollTo(0, lockedAt);
+      lockedAt = null;
+    }
+  }
+
   function close() {
     panel.classList.remove('open');
     shell.classList.remove('panel-open');
+    lockPage(false);
     panel.setAttribute('aria-hidden', 'true');
     if (selected) selected.classList.remove('selected');
     selected = null;
@@ -952,7 +972,7 @@
   document.getElementById('show-guide').addEventListener('click', () => {
     setGuide(false);
     if (location.hash !== '#feed') location.hash = '#feed';
-    document.querySelector('.content').scrollTop = 0;
+    document.querySelector('.content').scrollTop = 0; window.scrollTo(0, 0);
   });
   document.getElementById('guide').addEventListener('click', e => {
     const a = e.target.closest('a');
@@ -990,7 +1010,7 @@
     if (view === 'evaluators') { renderProof(); renderOthers(); }
     if (view === 'outcomes') renderOutcomes();
     if (view === 'holdout') renderHoldout();
-    document.querySelector('.content').scrollTop = 0;
+    document.querySelector('.content').scrollTop = 0; window.scrollTo(0, 0);
     document.title = 'Triage · ' + VIEWS[view];
   }
 

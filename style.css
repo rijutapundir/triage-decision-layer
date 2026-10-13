@@ -144,8 +144,8 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round
 }
 
 /* ---------- Content ---------- */
-.main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-.content { flex: 1; overflow: auto; padding: var(--s6); }
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.content { flex: 1; overflow: auto; padding: var(--s6); min-height: 0; }
 .view[hidden] { display: none; }
 .page-head {
   display: flex; justify-content: space-between; align-items: flex-end;
@@ -653,3 +653,20 @@ table.scores { width: 100%; border-collapse: collapse; font-variant-numeric: tab
 .learn-margin p { margin: var(--s2) 0 0; font-weight: 600; color: var(--heading); }
 .learn-margin .mode-chip { margin-left: var(--s2); }
 .worlds-summary { margin-bottom: var(--s4); padding: var(--s3) var(--s4); font-size: 14px; color: var(--heading); }
+
+/* ---------- Phones: normal page scrolling ----------
+   Desktop scrolls inside .content under a fixed-height shell. On phones that
+   trapped the page, so the document scrolls instead and the tab row sticks. */
+@media (max-width: 767px) {
+  /* clip, not hidden: hidden makes body a scroll container and breaks the sticky tab row */
+  html, body { height: auto; overflow-y: visible; overflow-x: hidden; overflow-x: clip; }
+  .shell { height: auto; min-height: 100dvh; overflow: visible; }
+  .body, .main { height: auto; overflow: visible; }
+  .content { overflow: visible; }
+  .sidebar { position: sticky; top: 0; z-index: 20; }
+
+  /* The case panel is full screen and scrolls inside itself */
+  .detail { height: 100dvh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .detail-body { overflow: visible; }
+  html.panel-lock, html.panel-lock body { overflow: hidden; }
+}
