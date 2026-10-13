@@ -659,30 +659,94 @@
       '<span>Across four simulated merchant types, the best single default reaches <strong>' + range('defaultPct') +
       '</strong> of each one\'s best fixed rule. As shipped, Triage reaches <strong>' + range('shippedPct') + '</strong>.</span>' +
       '<a href="#proof">See the proof →</a>';
+    const k = handover && handover.merchants.find(m => m.name === KAARA);
+    if (k) {
+      const st = status(k);
+      foot.insertAdjacentHTML('afterbegin', '<span class="mode-chip mode-' + st.cls + '">' +
+        (k.takeoverWeek ? 'Running: Triage' : 'Running: best default') + '</span>');
+      foot.insertAdjacentHTML('beforeend', '<span class="hero-mode">' + esc(approved.merchantName + ', simulated as home decor. ' + st.text) + '</span>');
+    }
   }
 
-  function proofReady(result) {
-    proof = result;
+  /* ---------- Handover timeline ----------
+     One small chart per merchant: weekly net margin of Triage and of the
+     default, as % of that merchant's best fixed rule. Shaded weeks = Triage
+     running, which starts only once the holdout's lower bound clears zero. */
+  let handover = null;
+  const KAARA = 'Home decor (Kaara-like)';
+
+  function status(m) {
+    if (m.takeoverWeek) return { cls: 'on', text: 'Triage takes over in week ' + m.takeoverWeek + ', once the holdout proves it ahead.' };
+    if (m.provenBehindWeek) return { cls: 'off', text: 'Stays on the default. From week ' + m.provenBehindWeek + ' the holdout shows Triage behind it.' };
+    const last = m.weeks[m.weeks.length - 1];
+    return { cls: 'wait', text: 'Still on the default at week ' + last.week + ': Triage looks ahead, but the holdout has not proved it (lower bound ' +
+      last.diffLoPct.toFixed(1) + '%).' };
+  }
+
+  function miniChart(m) {
+    const W = 300, H = 150, L = 34, R = 8, T = 10, B = 24;
+    const n = m.weeks.length, lo = 60, hi = 130;
+    const x = w => L + (w - 0.5) * (W - L - R) / n;
+    const y = v => T + (hi - Math.max(lo, Math.min(hi, v))) * (H - T - B) / (hi - lo);
+    const bw = (W - L - R) / n;
+    const shade = m.weeks.filter(w => w.running === 'triage')
+      .map(w => '<rect class="hv-on" x="' + (x(w.week) - bw / 2) + '" y="' + T + '" width="' + bw + '" height="' + (H - T - B) + '"/>').join('');
+    const grid = [70, 100, 130].map(v => '<line class="hv-grid" x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '"/>' +
+      '<text class="hv-tick" x="' + (L - 4) + '" y="' + (y(v) + 3) + '">' + v + '%</text>').join('');
+    const line = k => m.weeks.map((w, i) => (i ? 'L' : 'M') + x(w.week).toFixed(1) + ' ' + y(w[k]).toFixed(1)).join(' ');
+    const xt = m.weeks.map(w => '<text class="hv-tick hv-x" x="' + x(w.week) + '" y="' + (H - 8) + '">' + w.week + '</text>').join('');
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(m.name + ': ' + status(m).text) + '">' +
+      shade + grid + xt +
+      '<path class="hv-default" d="' + line('defaultPct') + '"/>' +
+      '<path class="hv-triage" d="' + line('triagePct') + '"/>' +
+      m.weeks.map(w => '<circle class="hv-dot" cx="' + x(w.week) + '" cy="' + y(w.triagePct) + '" r="2.5"/>').join('') +
+      '</svg>';
+  }
+
+  function renderHandover() {
+    const el = document.getElementById('handover');
+    if (!handover) { el.innerHTML = ''; return; }
+    el.innerHTML =
+      '<div class="card proof-card">' +
+        '<div class="card-head"><h2>Handover: the default runs until a holdout proves Triage ahead</h2>' +
+          '<p class="muted">Net margin per week as % of each merchant\'s best fixed rule. ' +
+          '<span class="hv-key hv-key-triage"></span>Triage <span class="hv-key hv-key-default"></span>Default ' +
+          '<span class="hv-key hv-key-on"></span>Triage running</p></div>' +
+        '<div class="hv-grid-wrap">' + handover.merchants.map(m => {
+          const st = status(m);
+          return '<div class="hv-cell"><div class="hv-name">' + esc(shortName(m.name)) + '</div>' + miniChart(m) +
+            '<p class="hv-status st-' + st.cls + '">' + esc(st.text) + '</p></div>';
+        }).join('') + '</div>' +
+        '<p class="table-foot">Same merchants, checkouts and true response as the table above. Triage\'s lift estimates get less noisy each week ' +
+          '(sd 0.35 in week 1 to 0.15 in week ' + handover.weeks + ') and explore falls from 10% to 5%. Each week ' +
+          handover.perWeek.toLocaleString('en-IN') + ' failed checkouts are split half to Triage, half to the default. ' +
+          'Triage takes over when the lower 95% bound of its advantage, pooled over the weeks so far, clears zero. ' +
+          'The bound comes from each checkout\'s pay-or-not outcome noise. Weekly points use two noisy estimate draws, so they wobble. ' +
+          'Computed in your browser in ' + (handover.ms / 1000).toFixed(1) + 's.</p>' +
+      '</div>';
+  }
+
+  function proofReady(msg) {
+    if (msg.kind === 'proof') proof = msg.result;
+    if (msg.kind === 'handover') handover = msg.result;
     renderHero();
-    if (viewFromHash() === 'proof') renderProof();
+    if (viewFromHash() === 'proof') { renderProof(); renderHandover(); }
   }
 
   function startProof() {
     try {
       const w = new Worker('proof-worker.js');
-      w.onmessage = e => { proofReady(e.data); w.terminate(); };
+      w.onmessage = e => { proofReady(e.data); if (e.data.kind === 'handover') w.terminate(); };
       w.onerror = e => { e.preventDefault(); w.terminate(); runProofHere(); };
     } catch (err) { runProofHere(); }
   }
   /* Fallback when workers are unavailable (e.g. opened from file://). sim.js
      restores LIFT_TABLE before returning, and nothing renders mid-run. */
   function runProofHere() {
-    setTimeout(() => {
-      const t0 = Date.now();
-      const r = runProof({ MERCHANT_POLICY, decide, scoreAction, checkGates, isAllowed, LIFT_TABLE, LADDER });
-      r.ms = Date.now() - t0;
-      proofReady(r);
-    }, 50);
+    const sim = makeSim({ MERCHANT_POLICY, decide, scoreAction, checkGates, isAllowed, LIFT_TABLE, LADDER,
+                          diagnose, SHIPPING_SUBSIDY });
+    const timed = (kind, fn) => { const t0 = Date.now(); const r = fn(); r.ms = Date.now() - t0; proofReady({ kind, result: r }); };
+    setTimeout(() => { timed('proof', sim.proof); setTimeout(() => timed('handover', sim.handover), 50); }, 50);
   }
 
   /* =========================================================================
@@ -703,7 +767,7 @@
     });
     close();
     if (view === 'policy') renderPolicy();
-    if (view === 'proof') renderProof();
+    if (view === 'proof') { renderProof(); renderHandover(); }
     if (view === 'outcomes') renderOutcomes();
     if (view === 'holdout') renderHoldout();
     document.querySelector('.content').scrollTop = 0;

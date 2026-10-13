@@ -157,6 +157,20 @@ if (typeof require !== 'undefined') {
         JSON.stringify(refLine(het[0], /tri (\d+)%/)) === JSON.stringify(got('earlyPct')) &&
         JSON.stringify(refLine(het[1], /tri (\d+)%/)) === JSON.stringify(got('maturePct')),
         het.map(r => JSON.stringify(r)).join(' | '));
+  // 12. Handover timeline: takeover only where the holdout proves Triage ahead.
+  const ho = require('./sim.js').runHandover({ ...engine, MERCHANT_POLICY });
+  const byName = Object.fromEntries(ho.merchants.map(m => [m.name, m]));
+  check('Handover: electronics stays on the default; fashion and beauty hand over',
+        byName['High-ticket electronics'].takeoverWeek === null &&
+        byName['High-ticket electronics'].provenBehindWeek !== null &&
+        byName['Low-ticket fashion'].takeoverWeek === 3 &&
+        byName['High-margin D2C beauty'].takeoverWeek === 1,
+        ho.merchants.map(m => m.name + ' takeover ' + m.takeoverWeek + ' behind ' + m.provenBehindWeek).join(', '));
+  check('Handover: a takeover happens only in a week whose lower bound clears zero',
+        ho.merchants.every(m => m.weeks.every(w =>
+          w.running === 'default' || (m.takeoverWeek && w.week >= m.takeoverWeek)) &&
+          (!m.takeoverWeek || m.weeks[m.takeoverWeek - 1].diffLoPct > 0)));
+
   check('Simulations leave the engine\'s lift table as they found it',
         JSON.stringify(engine.LIFT_TABLE) === JSON.stringify(LIFT_TABLE_AT_START));
 }

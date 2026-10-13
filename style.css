@@ -565,3 +565,25 @@ table.scores { width: 100%; border-collapse: collapse; font-variant-numeric: tab
 .proof-table .tag { margin-left: var(--s2); font-size: 11px; font-weight: 600; color: var(--blue); background: var(--blue-soft); padding: 1px var(--s2); border-radius: var(--r-pill); }
 .hero-foot a { color: var(--blue); font-weight: 600; text-decoration: none; white-space: nowrap; }
 .hero-foot a:hover { text-decoration: underline; }
+
+/* ---------- Handover ---------- */
+.hv-grid-wrap { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: var(--s4); padding: var(--s4) var(--s6); }
+.hv-name { font-weight: 600; color: var(--heading); margin-bottom: var(--s1); }
+.hv-cell svg { width: 100%; height: auto; display: block; }
+.hv-on { fill: var(--blue-soft); stroke: none; }
+.hv-grid { stroke: var(--line); stroke-width: 1; }
+.hv-tick { font-size: 9px; fill: var(--muted); stroke: none; text-anchor: end; }
+.hv-x { text-anchor: middle; }
+.hv-default { stroke: #9ca3af; stroke-width: 2; stroke-dasharray: 4 3; }
+.hv-triage { stroke: var(--blue); stroke-width: 2; }
+.hv-dot { fill: var(--blue); stroke: none; }
+.hv-status { font-size: 12px; margin: var(--s1) 0 0; }
+.hv-status.st-on { color: var(--blue); }
+.hv-status.st-off { color: var(--muted); }
+.hv-status.st-wait { color: var(--amber-text); }
+.hv-key { display: inline-block; width: 14px; height: 0; margin: 0 4px 3px 10px; vertical-align: middle; border-top: 2px solid var(--blue); }
+.hv-key-default { border-top: 2px dashed #9ca3af; }
+.hv-key-on { height: 10px; border: 0; background: var(--blue-soft); margin-bottom: 0; }
+.mode-chip { font-size: 12px; font-weight: 700; padding: 2px var(--s2); border-radius: var(--r-pill); background: var(--line-soft); color: var(--heading); }
+.mode-chip.mode-on { background: var(--blue-soft); color: var(--blue); }
+.hero-mode { flex-basis: 100%; color: var(--muted); }
