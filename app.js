@@ -337,10 +337,27 @@
     pauseBtn.setAttribute('aria-pressed', paused);
     pauseBtn.classList.toggle('on', paused);
     const msgs = [];
+    if (context.systemicFailure) {
+      const n = rows.filter(r => r.d.blocked && r.d.gate.kind === 'systemic').length;
+      msgs.push('<strong>Alert: failures are clustered at ' + esc(context.systemicFailureKey) + '.</strong> ' +
+        'This looks like a bank outage, not ' + n + ' customers changing their minds. Outreach to these ' + n +
+        ' cases has stopped; they are marked "Blocked, outage" below.');
+    }
     if (paused) msgs.push('<strong>Recovery paused.</strong> Triage still decides and logs every case, but no customer is contacted until you resume.');
     el.innerHTML = msgs.map(m => '<p>' + m + '</p>').join('');
     el.hidden = !msgs.length;
   }
+
+  document.getElementById('outage').addEventListener('click', () => {
+    context.systemicFailure = !context.systemicFailure;
+    const btn = document.getElementById('outage');
+    btn.textContent = context.systemicFailure ? 'End HDFC outage' : 'Simulate HDFC outage';
+    btn.setAttribute('aria-pressed', context.systemicFailure);
+    btn.classList.toggle('on', context.systemicFailure);
+    logEvent('Merchant', (context.systemicFailure ? 'Started' : 'Ended') + ' a simulated ' + context.systemicFailureKey + ' outage');
+    if (context.systemicFailure) logEvent('Triage', 'Failures clustered at ' + context.systemicFailureKey + ': outreach to those cases stopped, merchant alerted');
+    refresh();
+  });
 
   document.getElementById('pause').addEventListener('click', () => {
     paused = !paused;
