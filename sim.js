@@ -1,8 +1,7 @@
 /* =============================================================================
    TRIAGE - proof simulation
-   A port of reference/proof_sim_reference.js, the seeded script behind the
-   PROOF table in the product note. Same seed, same call order, same numbers:
-   engine.test.js checks this file against the reference and against the note.
+   A port of reference/proof_sim_20worlds.js at seed 7 (mulberry32): same seed,
+   same call order, same numbers. engine.test.js checks it against that script.
 
    What it does, per merchant (2,000 synthetic checkouts each):
      - each merchant's TRUE lifts differ from the engine's table (sd 0.4)
@@ -23,7 +22,8 @@ function makeSim(E) {
   /* ---- Unchanged from the reference, apart from layout ---- */
   const TRUE = JSON.parse(JSON.stringify(LIFT_TABLE));
   let seed = 7;
-  const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+  // mulberry32, as in reference/proof_sim_20worlds.js. The earlier LCG overflowed exact float integers.
+  const rnd = () => { let t = (seed += 0x6D2B79F5) | 0; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
   const gauss = () => { let u = 0, v = 0; while (!u) u = rnd(); while (!v) v = rnd();
                         return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
   const pick = w => { let r = rnd() * w.reduce((a, b) => a + b[1], 0);

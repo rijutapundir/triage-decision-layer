@@ -799,10 +799,13 @@
 
   function status(m) {
     if (m.takeoverWeek) return { cls: 'on', text: 'Triage takes over in week ' + m.takeoverWeek + ', once the holdout proves it ahead.' };
-    if (m.provenBehindWeek) return { cls: 'off', text: 'Stays on the default. From week ' + m.provenBehindWeek + ' the holdout shows Triage behind it.' };
+    // Judge by the latest week, not by an early dip of the bound.
     const last = m.weeks[m.weeks.length - 1];
-    return { cls: 'wait', text: 'Still on the default at week ' + last.week + ': Triage looks ahead, but the holdout has not proved it (lower bound ' +
-      minus1(last.diffLoPct) + '%).' };
+    if (last.diffHiPct < 0) return { cls: 'off', text: 'Stays on the default: by week ' + last.week + ' the holdout shows Triage behind it.' };
+    const ahead = last.diffLoPct + last.diffHiPct > 0;
+    return { cls: 'wait', text: 'Still on the default at week ' + last.week + ': Triage ' +
+      (ahead ? 'looks ahead, but the holdout has not proved it' : 'is level with or behind it, and the holdout has not proved it ahead') +
+      ' (lower bound ' + minus1(last.diffLoPct) + '%).' };
   }
 
   function miniChart(m) {

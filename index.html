@@ -144,7 +144,7 @@
             </div>
 
             <div class="card callout mode-callout">
-              <strong>Running: best default.</strong> Triage is ~8% ahead in your holdout but not yet proven, so the default keeps running.
+              <strong>Running: best default.</strong> Triage looks ahead in your holdout but isn't proven, so the default keeps running.
               Triage takes over only when your holdout proves it earns more.
             </div>
 
@@ -179,9 +179,16 @@
               <span class="sim-pill">Simulated</span>
             </div>
 
+            <div class="card callout worlds-summary">
+              Across 20 simulated worlds, the best single default's worst merchant averaged 83% of its best fixed rule (range 59–100%).
+              Triage's worst averaged 90% in its first weeks (ahead of the default's worst in 12 of 20, so it starts on the default)
+              and 96% once its estimates matured (ahead in 19 of 20).
+            </div>
+
             <div class="card proof-card">
               <div class="card-head">
-                <h2>Net margin vs each merchant's best fixed rule in hindsight</h2>
+                <h2>One example world (seed 7)</h2>
+                <p class="muted">Net margin vs each merchant's best fixed rule in hindsight.</p>
                 <p class="muted">Behind a holdout, Triage matches or beats the default at every merchant.</p>
               </div>
               <div class="table-scroll"><table class="data-table proof-table" id="proof-table"></table></div>
@@ -192,7 +199,7 @@
             <div class="card proof-card">
               <div class="card-head">
                 <h2>Six fixed rules, scored at each merchant</h2>
-                <p class="muted">No one rule is best everywhere: the default is the best rule at electronics but reaches only 75% at beauty. Coupons for every failure lose money at electronics.</p>
+                <p class="muted">No one rule is best everywhere: in this world the default is the best rule at electronics and home decor but reaches 90% at beauty and 93% at fashion. Coupons for every failure lose money at electronics.</p>
               </div>
               <div class="table-scroll"><table class="data-table proof-table" id="rules-table"></table></div>
             </div>

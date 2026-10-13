@@ -652,3 +652,4 @@ table.scores { width: 100%; border-collapse: collapse; font-variant-numeric: tab
 .learn-margin { padding: var(--s3) var(--s6); border-top: 1px solid var(--line-soft); font-size: 13px; }
 .learn-margin p { margin: var(--s2) 0 0; font-weight: 600; color: var(--heading); }
 .learn-margin .mode-chip { margin-left: var(--s2); }
+.worlds-summary { margin-bottom: var(--s4); padding: var(--s3) var(--s4); font-size: 14px; color: var(--heading); }

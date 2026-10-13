@@ -135,38 +135,36 @@ if (typeof require !== 'undefined') {
   const simjs  = require('./sim.js');
   const proof  = simjs.runProof({ ...engine, MERCHANT_POLICY });
   simjs.shipAsProven(proof, simjs.runHandover({ ...engine, MERCHANT_POLICY }));
-  const NOTE_PROOF = {               // rows of the note's PROOF table, in column order
-    defaultPct: [100, 100,  75,  99],
-    earlyPct:   [115,  86,  94,  99],
-    maturePct:  [123,  98, 104, 108],
-    shippedPct: [123, 100, 104,  99]  // Triage only where its holdout proved it by week 8
+  const NOTE_PROOF = {               // example world, seed 7 (mulberry32), in column order
+    defaultPct: [ 93, 100,  90, 100],
+    earlyPct:   [ 91,  94, 111,  91],
+    maturePct:  [ 96,  99, 123, 103],
+    shippedPct: [ 93, 100, 123, 100]  // Triage only where its holdout proved it by week 8
   };
   const got = k => proof.merchants.map(m => m[k]);
-  check('Proof simulation reproduces the note\'s PROOF table',
+  check('Proof simulation reproduces the example world (seed 7)',
         Object.keys(NOTE_PROOF).every(k => JSON.stringify(got(k)) === JSON.stringify(NOTE_PROOF[k])),
         Object.keys(NOTE_PROOF).map(k => k + ' ' + got(k).join('/')).join(', '));
 
-  // Run the untouched reference script and read its console.table output.
+  // Run the untouched 20-world reference at seed 7 and compare its worst-merchant values.
   const fs = require('fs'), vm = require('vm');
-  let refRows = null;
-  vm.runInNewContext(fs.readFileSync(__dirname + '/reference/proof_sim_reference.js', 'utf8'),
-    { require, __dirname: __dirname + '/reference', console: { table: r => { refRows = r; }, log() {} } });
-  const refLine = (r, n) => Object.values(r).slice(1, 5).map(s => +s.match(n)[1]);
-  const het = refRows.filter(r => r.scenario.startsWith('lifts differ'));
-  check('sim.js matches reference/proof_sim_reference.js exactly',
-        het.length === 2 &&
-        JSON.stringify(refLine(het[0], /def (\d+)%/)) === JSON.stringify(got('defaultPct')) &&
-        JSON.stringify(refLine(het[0], /tri (\d+)%/)) === JSON.stringify(got('earlyPct')) &&
-        JSON.stringify(refLine(het[1], /tri (\d+)%/)) === JSON.stringify(got('maturePct')),
-        het.map(r => JSON.stringify(r)).join(' | '));
+  let ref = null;
+  vm.runInNewContext(fs.readFileSync(__dirname + '/reference/proof_sim_20worlds.js', 'utf8'),
+    { require, __dirname: __dirname + '/reference', process: { argv: ['node', 'proof_sim_20worlds.js', '7'] },
+      console: { log: x => { ref = JSON.parse(x); }, table() {} } });
+  const worst = k => Math.min(...got(k));
+  check('sim.js matches reference/proof_sim_20worlds.js at seed 7',
+        ref && ref.S === 7 && ref.defW === worst('defaultPct') && ref.triE === worst('earlyPct') && ref.triM === worst('maturePct'),
+        JSON.stringify(ref) + ' vs ' + [worst('defaultPct'), worst('earlyPct'), worst('maturePct')].join('/'));
+
   // 12. Handover timeline: takeover only where the holdout proves Triage ahead.
   const ho = require('./sim.js').runHandover({ ...engine, MERCHANT_POLICY });
   const byName = Object.fromEntries(ho.merchants.map(m => [m.name, m]));
-  check('Handover: electronics stays on the default; fashion and beauty hand over',
+  check('Handover: only beauty is proven by week 8; the rest stay on the default',
+        byName['High-margin D2C beauty'].takeoverWeek === 1 &&
+        byName['Low-ticket fashion'].takeoverWeek === null &&
         byName['High-ticket electronics'].takeoverWeek === null &&
-        byName['High-ticket electronics'].provenBehindWeek !== null &&
-        byName['Low-ticket fashion'].takeoverWeek === 3 &&
-        byName['High-margin D2C beauty'].takeoverWeek === 1,
+        byName['Home decor (Kaara-like)'].takeoverWeek === null,
         ho.merchants.map(m => m.name + ' takeover ' + m.takeoverWeek + ' behind ' + m.provenBehindWeek).join(', '));
   check('Handover: a takeover happens only in a week whose lower bound clears zero',
         ho.merchants.every(m => m.weeks.every(w =>
