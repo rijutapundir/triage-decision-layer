@@ -33,7 +33,6 @@ Merchant controls: per-case override, global pause, and a simulated HDFC outage.
 | `engine.test.js` | Tests (engine, the note's cases, simulation, handover, learning) |
 | `reference/` | Standalone reference simulations and the 20-world results |
 | `deploy/` | Exactly what Netlify serves (see `netlify.toml`) |
-| `Triage_Product_Note.*`, `Triage_AI_Build_Log.*` | Submission documents |
 | `docs/` | The CEO-style scope review that set the final build plan |
 | `.gstack/qa-reports/` | Browser QA reports, evidence and screenshots |
 
@@ -55,4 +54,4 @@ node engine.test.js
 
 ## Not included
 
-The challenge brief and other reference material used during the build are confidential or private and are not part of this repository.
+The challenge brief and other reference material used during the build are confidential or private and are not part of this repository. The product note and AI build log were submitted separately.

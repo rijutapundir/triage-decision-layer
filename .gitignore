@@ -9,3 +9,9 @@ Ref*.txt
 .gstack/browse-*
 .gstack/tmp/
 node_modules/
+
+# Submission documents: kept local, not published
+Triage_AI_Build_Log.docx
+Triage_AI_Build_Log.pdf
+Triage_Product_Note.docx
+Triage_Product_Note.pdf
