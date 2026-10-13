@@ -55,10 +55,30 @@
   const decisionKey   = d => (d.blocked ? 'blocked' : d.chosen.action);
   const decisionLabel = d => (d.blocked ? gateLabel(d) : d.chosen.label);
 
+  /* ---------- Merchant control: overrides, pause, audit log ----------
+     Applied on top of the engine, never inside it. An overridden case leaves
+     the holdout and explore arms: overrides may teach diagnosis, never lift. */
+  const overrides = {};          // caseId -> action the merchant chose
+  let paused = false;
+  const audit = [];
+  function logEvent(who, what) {
+    audit.unshift({ at: new Date(), who, what });
+    if (!document.getElementById('view-audit').hidden) renderAudit();
+  }
+
+  function applyMerchant(r) {
+    if (r.d.blocked) return r;
+    const hold = r.d.scored.find(s => s.action === 'hold');
+    if (paused) return { ...r, arm: 'paused', taken: hold };
+    const o = overrides[r.c.id];
+    if (o) return { ...r, arm: 'override', taken: r.d.scored.find(s => s.action === o) || hold };
+    return r;
+  }
+
   /* ---------- Engine runs ---------- */
   function runAll(policy) {
     return CASES
-      .map(c => resolveCase(c, policy, context))
+      .map(c => applyMerchant(resolveCase(c, policy, context)))
       .sort((a, b) => a.c.minutesAgo - b.c.minutesAgo);
   }
   /* Cash is what is actually paid at contact time: messaging, telephony, agent
@@ -137,6 +157,12 @@
         pickLine = 'Would have chosen: ' + d.chosen.label;
       } else if (arm === 'explore') {
         actionText = taken.label + ' (explore)';
+        pickLine = 'Engine pick: ' + d.chosen.label;
+      } else if (arm === 'override') {
+        actionText = taken.label + ' (your override)';
+        pickLine = 'Engine pick: ' + d.chosen.label;
+      } else if (arm === 'paused') {
+        actionText = ACTION_LABEL.hold + ' (paused)';
         pickLine = 'Engine pick: ' + d.chosen.label;
       }
       const cost = cashCost(r);
@@ -250,8 +276,14 @@
           : arm === 'explore'
           ? '<div class="arm-note"><strong>Explore.</strong> This case gets ' + esc(taken.label.toLowerCase()) +
             ' at random (' + inr2(ACTION_COSTS[taken.action]) + ' cash), so per-action lift can be estimated.</div>'
+          : arm === 'override'
+          ? '<div class="arm-note"><strong>Your override.</strong> This case gets ' + esc(taken.label.toLowerCase()) +
+            '. It leaves the holdout measurement: overrides can teach diagnosis, never lift.</div>'
+          : arm === 'paused'
+          ? '<div class="arm-note"><strong>Recovery paused.</strong> No customer is contacted until you resume.</div>'
           : '') +
       '</div>' +
+      overrideHtml(rows[i]) +
       '<h3>Case</h3>' +
       '<div class="facts">' + facts.map(([k, v]) =>
         '<div><div class="k">' + k + '</div><div class="v">' + esc(v) + '</div></div>').join('') + '</div>' +
@@ -265,6 +297,62 @@
     panel.classList.add('open');
     shell.classList.add('panel-open');
     panel.setAttribute('aria-hidden', 'false');
+  }
+
+  function overrideHtml({ c, d }) {
+    if (d.blocked) {
+      return '<h3>Your call</h3><p class="note">A gate stopped contact for this customer, so it cannot be overridden.</p>';
+    }
+    const cur = overrides[c.id] || '';
+    const opts = '<option value="">Triage\'s decision: ' + esc(d.chosen.label) + '</option>' +
+      d.scored.filter(s => s.allowed && s.action !== d.chosen.action).map(s =>
+        '<option value="' + s.action + '"' + (cur === s.action ? ' selected' : '') + '>' + esc(s.label) + '</option>').join('');
+    return '<h3>Your call</h3>' +
+      '<label class="override"><span>Override this decision</span><select id="override" data-case="' + esc(c.id) + '">' + opts + '</select></label>' +
+      '<p class="note">Only actions your policy allows are offered. Every override is logged.</p>';
+  }
+
+  document.getElementById('detail-body').addEventListener('change', e => {
+    if (e.target.id !== 'override') return;
+    const id = e.target.dataset.case, v = e.target.value;
+    const r = rows.find(x => x.c.id === id);
+    if (v) { overrides[id] = v; logEvent('Merchant', 'Overrode ' + id + ': ' + r.d.chosen.label + ' → ' + ACTION_LABEL[v]); }
+    else   { delete overrides[id]; logEvent('Merchant', 'Cleared override on ' + id + ', back to ' + r.d.chosen.label); }
+    refresh();
+    open(rows.findIndex(x => x.c.id === id));
+  });
+
+  /* Re-render whatever depends on the merchant layer. */
+  function refresh() {
+    renderFeed();
+    renderBanner();
+    const v = viewFromHash();
+    if (v === 'holdout') renderHoldout();
+  }
+
+  function renderBanner() {
+    const el = document.getElementById('feed-banner');
+    const pauseBtn = document.getElementById('pause');
+    pauseBtn.textContent = paused ? 'Resume recovery' : 'Pause recovery';
+    pauseBtn.setAttribute('aria-pressed', paused);
+    pauseBtn.classList.toggle('on', paused);
+    const msgs = [];
+    if (paused) msgs.push('<strong>Recovery paused.</strong> Triage still decides and logs every case, but no customer is contacted until you resume.');
+    el.innerHTML = msgs.map(m => '<p>' + m + '</p>').join('');
+    el.hidden = !msgs.length;
+  }
+
+  document.getElementById('pause').addEventListener('click', () => {
+    paused = !paused;
+    logEvent('Merchant', paused ? 'Paused all recovery' : 'Resumed recovery');
+    refresh();
+  });
+
+  function renderAudit() {
+    const t = document.getElementById('audit-table');
+    t.innerHTML = '<thead><tr><th>Time</th><th>Who</th><th>What</th></tr></thead><tbody>' +
+      audit.map(a => '<tr><td>' + esc(a.at.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })) +
+        '</td><td>' + esc(a.who) + '</td><td>' + esc(a.what) + '</td></tr>').join('') + '</tbody>';
   }
 
   function close() {
@@ -450,6 +538,11 @@
   });
 
   document.getElementById('approve').addEventListener('click', () => {
+    const changes = Object.keys(draft).filter(k => k !== 'allowedActions' && draft[k] !== approved[k])
+      .map(k => k + ' ' + approved[k] + ' → ' + draft[k]);
+    const on  = draft.allowedActions.filter(a => !approved.allowedActions.includes(a)).map(a => ACTION_LABEL[a] + ' on');
+    const off = approved.allowedActions.filter(a => !draft.allowedActions.includes(a)).map(a => ACTION_LABEL[a] + ' off');
+    logEvent('Merchant', 'Approved policy: ' + (on.concat(off, changes).join(', ') || 'no changes'));
     approved = clone(draft);
     renderFeed();
     renderImpact();
@@ -752,7 +845,7 @@
   /* =========================================================================
      NAVIGATION
      ========================================================================= */
-  const VIEWS = { feed: 'Decision feed', policy: 'Policy', proof: 'Proof', outcomes: 'Outcomes', holdout: 'Holdout' };
+  const VIEWS = { feed: 'Decision feed', policy: 'Policy', audit: 'Audit log', proof: 'Proof', outcomes: 'Outcomes', holdout: 'Holdout' };
   const viewFromHash = () => {
     const v = location.hash.replace(/^#/, '');
     return VIEWS[v] ? v : 'feed';
@@ -767,6 +860,7 @@
     });
     close();
     if (view === 'policy') renderPolicy();
+    if (view === 'audit') renderAudit();
     if (view === 'proof') { renderProof(); renderHandover(); }
     if (view === 'outcomes') renderOutcomes();
     if (view === 'holdout') renderHoldout();
@@ -778,7 +872,10 @@
   // and Back / Forward / refresh all land on the right view.
   window.addEventListener('hashchange', () => show(viewFromHash()));
 
+  logEvent('Triage', 'Session started. ' + CASES.length + ' cases decided under the approved policy; holdout ' +
+    Math.round(approved.holdoutShare * 100) + '%, explore ' + Math.round(approved.exploreShare * 100) + '%');
   renderFeed();
+  renderBanner();
   renderHero();
   show(viewFromHash());
   startProof();

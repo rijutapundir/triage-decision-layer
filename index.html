@@ -12,6 +12,7 @@
       <div class="brand">Triage</div>
       <div class="merchant" id="merchant-name"></div>
       <div class="topbar-right">
+        <button type="button" class="pause-btn" id="pause" aria-pressed="false">Pause recovery</button>
         <span class="badge"><span class="badge-full">Prototype, synthetic data</span><span class="badge-short">Synthetic</span></span>
         <span class="avatar" id="avatar" aria-hidden="true"></span>
       </div>
@@ -25,6 +26,8 @@
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h9"/></svg>Decision feed</a>
           <a class="nav-item" href="#policy" data-view="policy">
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5 16 5v4.5c0 3.7-2.6 6.6-6 8-3.4-1.4-6-4.3-6-8V5z"/><path d="m7.5 10 1.8 1.8L13 8"/></svg>Policy</a>
+          <a class="nav-item" href="#audit" data-view="audit">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3h10v14H5z"/><path d="M8 7h4M8 10h4M8 13h2"/></svg>Audit log</a>
 
           <div class="nav-section">Measurement</div>
           <a class="nav-item" href="#proof" data-view="proof">
@@ -44,6 +47,8 @@
               <p class="hero-line">Triage starts every merchant on the best default rule, and takes over only where a holdout proves it earns more.</p>
               <div class="hero-foot" id="hero-foot"></div>
             </div>
+
+            <div class="banner" id="feed-banner" role="status" hidden></div>
 
             <div class="page-head">
               <div>
@@ -92,6 +97,18 @@
                 <h2>Live impact <span class="muted">vs approved policy, all cases</span></h2>
                 <div id="impact"></div>
               </aside>
+            </div>
+          </section>
+
+          <section class="view" id="view-audit" hidden>
+            <div class="page-head">
+              <div>
+                <h1>Audit log</h1>
+                <p class="muted">Every change a merchant makes, newest first. This prototype keeps it for this session only; in production it is stored with every decision.</p>
+              </div>
+            </div>
+            <div class="card">
+              <table class="data-table" id="audit-table"></table>
             </div>
           </section>
 

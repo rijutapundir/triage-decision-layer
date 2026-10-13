@@ -587,3 +587,14 @@ table.scores { width: 100%; border-collapse: collapse; font-variant-numeric: tab
 .mode-chip { font-size: 12px; font-weight: 700; padding: 2px var(--s2); border-radius: var(--r-pill); background: var(--line-soft); color: var(--heading); }
 .mode-chip.mode-on { background: var(--blue-soft); color: var(--blue); }
 .hero-mode { flex-basis: 100%; color: var(--muted); }
+
+/* ---------- Merchant control ---------- */
+.pause-btn { font: inherit; font-size: 12px; font-weight: 600; color: #fff; background: transparent; border: 1px solid #4b5563;
+  border-radius: var(--r-pill); padding: 4px var(--s3); cursor: pointer; white-space: nowrap; }
+.pause-btn:hover { border-color: #9ca3af; }
+.pause-btn.on { background: #b91c1c; border-color: #b91c1c; }
+.banner { margin-bottom: var(--s6); padding: var(--s3) var(--s4); border-radius: var(--r); background: #fef2f2; border: 1px solid #fecaca; color: #7f1d1d; }
+.banner p { margin: 0; }
+.banner p + p { margin-top: var(--s2); }
+.override { display: flex; flex-direction: column; gap: var(--s1); font-size: 13px; color: var(--muted); }
+.override select { font: inherit; font-size: 14px; color: var(--heading); padding: var(--s2); border: 1px solid var(--line); border-radius: var(--r-sm); background: #fff; }
