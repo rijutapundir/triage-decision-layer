@@ -1,0 +1,47 @@
+
+QA_DEADLINE {"guard":"qa-deadline","event":"started","version":1,"startedAt":"2026-10-12T19:22:21.525Z","deadlineAt":"2026-10-12T19:37:21.525Z","budgetMs":900000,"observedAt":"2026-10-12T19:23:57.950Z","remainingMs":803575,"expired":false}
+--- BEGIN UNTRUSTED EXTERNAL CONTENT (source: https://triage-decision-layer.netlify.app/) ---
+Triage
+Kaara Living
+Prototype, synthetic data
+KL
+Recovery
+Decision feed
+Policy
+Measurement
+Outcomes
+Holdout
+Decision feed
+Every failed or abandoned checkout, and what Triage decided to do about it.
+Cases4032 contacted, 3 held, 5 blockedTotal cost₹516.70Messaging, calls and fatigue across contacted casesDiscount avoided₹1716 cases where a discount scored highest and was refused
+All 40Contacted 32Held 3Blocked 5
+Hold 3Payment link 19Voice call + link 13Blocked 5
+Time
+Order
+Cause
+Action
+Reason
+Cost
+19 min agoCHK-4108₹1,309UPI · PaytmPrice hesitationPayment linkDiscount scored higher but did not clear the margin hurdle; took payment link instead.₹9.8021 min agoCHK-4104₹1,079UPI · Google PayUPI timeoutPayment linkUPI timeout. Beats retry prompt by Rs 20 in net value.₹9.8023 min agoCHK-4139₹599Card · SBIBank declinePayment linkHoldoutBank decline. Equivalent to approved discount in net value; took the cheaper rung.₹9.8026 min agoCHK-4100₹679UPI · PhonePeUPI timeoutPayment linkUPI timeout. Equivalent to retry prompt in net value.₹9.8037 min agoCHK-4117₹1,159UPI · PaytmUPI timeoutPayment linkUPI timeout. Equivalent to retry prompt in net value.₹14.3038 min agoCHK-4101₹1,149Card · ICICIPrice hesitationPayment linkDiscount scored higher but did not clear the margin hurdle; took payment link instead.₹9.8040 min agoCHK-4130₹479Card · HDFCBank declinePayment linkBank decline. Equivalent to approved discount in net value; took the cheaper rung.₹9.8045 min agoCHK-4110₹2,149Card · ICICIOTP drop offPayment linkOTP drop off. Equivalent to voice call + link in net value; took the cheaper rung.₹9.8049 min agoCHK-4126₹449Card · HDFCBank declinePayment linkHoldoutBank decline. Equivalent to approved discount in net value; took the cheaper rung.₹9.8056 min agoCHK-4134₹3,379Card · HDFCBank declineVoice call + linkHoldoutBank decline. Beats payment link by Rs 315 in net value.₹27.501h 6m agoCHK-4133₹429UPI · PhonePePrice hesitationNo contactExpected lift does not cover the cost of approved discount. Baseline recovery is 7% with no contact.₹0.001h 9m agoCHK-4128₹5,979Card · SBIOTP drop offPayment linkOTP drop off. Beats retry prompt by Rs 146 in net value.₹14.301h 12m agoCHK-4125₹3,339Card · SBIBank declineVoice call + linkExploreBank decline. Beats payment link by Rs 282 in net value.₹23.001h 18m agoCHK-4116₹1,169CODPrice hesitationPayment linkDiscount scored higher but did not clear the margin hurdle; took payment link instead.₹9.801h 23m agoCHK-4136₹899UPI · Google PayUPI timeoutBlocked, opted outCustomer has opted out of all recovery contact.₹0.001h 33m agoCHK-4115₹6,109UPI · PaytmBank declineBlocked, opted outCustomer has opted out of all recovery contact.₹0.001h 36m agoCHK-4137₹7,839Wallet · PaytmBank declineVoice call + linkBank decline. Beats payment link by Rs 749 in net value.₹27.501h 37m agoCHK-4122₹1,659Card · HDFCBank declineVoice call + linkBank decline. Beats payment link by Rs 91 in net value.₹23.001h 40m agoCHK-4138₹899UPI · Google PayUPI timeoutPayment linkUPI timeout. Equivalent to retry prompt in net value.₹9.801h 44m agoCHK-4120₹1,709Card · SBIPrice hesitationPayment linkDiscount scored higher but did not clear the margin hurdle; took payment link instead.₹9.802h 3m agoCHK-4121₹519CODPrice hesitationNo contactExploreExpected lift does not cover the cost of approved discount. Baseline recovery is 7% with no contact.₹0.002h 4m agoCHK-4112₹3,979Netbanking · ICICIPrice hesitationVoice call + linkPrice hesitation. Equivalent to approved discount in net value; took the cheaper rung.₹23.002h 11m agoCHK-4102₹1,409Card · SBIOTP drop offPayment linkOTP drop off. Beats retry prompt by Rs 37 in net value.₹9.802h 19m agoCHK-4118₹2,789Card · HDFCBank declineVoice call + linkHoldoutBank decline. Beats payment link by Rs 163 in net value.₹27.502h 20m agoCHK-4111₹6,399Card · HDFCBank declineVoice call + linkBank decline. Beats payment link by Rs 552 in net value.₹23.002h 24m agoCHK-4129₹1,779Card · HDFCPrice hesitationPayment linkExploreDiscount scored higher but did not clear the margin hurdle; took payment link instead.₹9.802h 29m agoCHK-4135₹4,179Netbanking · ICICIPrice hesitationBlocked, contact capContact cap reached (3 of 3 this week).₹0.002h 39m agoCHK-4103₹579Card · KotakBank declineBlocked, opted outCustomer has opted out of all recovery contact.₹0.002h 39m agoCHK-4119₹439Netbanking · KotakPrice hesitationNo contactExpected lift does not cover the cost of approved discount. Baseline recovery is 7% with no contact.₹0.002h 40m agoCHK-4105₹2,599Netbanking · AxisBank declineVoice call + linkBank decline. Beats payment link by Rs 151 in net value.₹23.002h 40m agoCHK-4107₹1,069UPI · PaytmUPI timeoutBlocked, contact capContact cap reached (3 of 3 this week).₹0.002h 40m agoCHK-4113₹1,919Wallet · PaytmBank declineVoice call + linkBank decline. Beats payment link by Rs 120 in net value.₹23.002h 46m agoCHK-4109₹399Card · SBIOTP drop offPayment linkExploreOTP drop off. Equivalent to retry prompt in net value.₹9.803h 0m agoCHK-4124₹4,059UPI · PaytmUPI timeoutVoice call + linkUPI timeout. Beats payment link by Rs 54 in net value.₹32.003h 4m agoCHK-4106₹909UPI · PaytmUPI timeoutPayment linkHoldoutUPI timeout. Equivalent to retry prompt in net value.₹9.803h 8m agoCHK-4114₹799Card · HDFCBank declinePayment linkExploreBank decline. Equivalent to approved discount in net value; took the cheaper rung.₹9.803h 8m agoCHK-4131₹2,279CODPrice hesitationPayment linkHoldoutDiscount scored higher but did not clear the margin hurdle; took payment link instead.₹9.803h 23m agoCHK-4123₹1,799Card · ICICIBank declineVoice call + linkBank decline. Beats payment link by Rs 100 in net value.₹23.003h 35m agoCHK-4132₹5,099Card · KotakPrice hesitationVoice call + linkPrice hesitation. Equivalent to approved discount in net value; took the cheaper rung.₹23.003h 37m agoCHK-4127₹1,589Card · AxisBank declineVoice call + linkExploreBank decline. Beats payment link by Rs 97 in net value.₹23.00
+No cases match.
+Policy
+Approve once: every action inside this policy then runs on its own, with no sign-off per case. Nothing outside it ever runs.
+Reset to default
+Approve policy
+Live impact vs approved policy, all cases
+Outcomes
+30-day pilot, simulated.
+Simulated
+Recovery rate by action
+Share of cases that went on to pay, compared with the holdout that received no contact.
+Spend breakdown
+Holdout
+Cases Triage deliberately leaves alone, so the lift on Outcomes is measured, not assumed.
+Today's holdout and explore cases
+Blocked cases are left out: a gate stops contact for them anyway.
+Is the pilot big enough? Simulated
+To detect a 4pp lift over a 14.5% baseline with 95% confidence and 80% power, the holdout needs about 1,230 cases. At ~400 failed checkouts a day and a 10% holdout, that takes about 31 days. Before that, Outcomes shows assumptions, not results.
+Close
+--- END UNTRUSTED EXTERNAL CONTENT ---
+
+QA_DEADLINE {"guard":"qa-deadline","event":"finished","observedAt":"2026-10-12T19:23:59.118Z","deadlineAt":"2026-10-12T19:37:21.525Z","timedOut":false,"exitCode":0}

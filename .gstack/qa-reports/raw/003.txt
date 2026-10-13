@@ -1,0 +1,5 @@
+
+QA_DEADLINE {"guard":"qa-deadline","event":"started","version":1,"startedAt":"2026-10-12T18:58:56.818Z","deadlineAt":"2026-10-12T19:13:56.818Z","budgetMs":900000,"observedAt":"2026-10-12T18:59:55.700Z","remainingMs":841118,"expired":false}
+{"rows":40,"uniq":40,"sum":"516.70","nan":0,"cls":"feed-row row-contact","tag":"DIV"}
+
+QA_DEADLINE {"guard":"qa-deadline","event":"finished","observedAt":"2026-10-12T18:59:56.706Z","deadlineAt":"2026-10-12T19:13:56.818Z","timedOut":false,"exitCode":0}

@@ -1,0 +1,7 @@
+
+GET https://triage-decision-layer.netlify.app/ → 200 (4037ms, 2393B)
+GET https://triage-decision-layer.netlify.app/style.css → 200 (403ms, 5082B)
+GET https://triage-decision-layer.netlify.app/data.js → 200 (341ms, 2162B)
+GET https://triage-decision-layer.netlify.app/engine.js → 200 (337ms, 4828B)
+GET https://triage-decision-layer.netlify.app/app.js → 200 (762ms, 9774B)
+

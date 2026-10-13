@@ -1,0 +1,6 @@
+{
+  "observationCommand": "bun \"$HOME/.claude/skills/gstack/bin/gstack-qa-deadline\" run deadline.json -- \"$B\" js \"(()=>{const a=[...document.querySelectorAll('nav a, aside a')].find(x=>x.innerText.trim()==='Holdout'); a.click(); return JSON.stringify({href:a.getAttribute('href'), url:location.href, text:document.querySelector('main').innerText.slice(0,6000)})})()\"",
+  "observed": "VERBATIM OUTPUT STORED IN raw-005.txt. Key values: href '#'; url 'https://triage-decision-layer.netlify.app/'; 'Treated 23 Of 35 eligible cases today'; 'Holdout 6 10% of eligible cases, no contact'; 'Explore 6 10% get a random allowed action'; 'CHK-4139 ... Payment link\\tNo contact (holdout)'; 'CHK-4134 ... Voice call + link\\tNo contact (holdout)'; 'CHK-4114 ... Payment link\\tFree shipping (explore)'; 'CHK-4121 ... Hold, no contact\\tFree shipping (explore)'",
+  "hypothesis": "ISSUE-001, 004 and 005 unchanged. Open Outcomes to recheck the free shipping spend per case (R3).",
+  "nextCommand": "bun \"$HOME/.claude/skills/gstack/bin/gstack-qa-deadline\" run deadline.json -- \"$B\" js \"(()=>{const a=[...document.querySelectorAll('nav a, aside a')].find(x=>x.innerText.trim()==='Outcomes'); a.click(); return JSON.stringify({url:location.href, text:document.querySelector('main').innerText.slice(0,6000)})})()\""
+}

@@ -1,0 +1,57 @@
+
+Outcomes
+
+30-day pilot, simulated.
+
+Simulated
+Incremental recovery rate
++4.2pp
+18.7% treated vs 14.5% holdout · 95% CI +2.1 to +6.3pp
+Incremental orders
++456
+Orders that would not have happened without contact
+Net incremental margin
+₹1,57,178
+₹2,23,440 margin from incremental orders, minus ₹66,262 spend
+Cost per incremental order
+₹145
+vs ₹33 per recovery. Most recoveries would have happened anyway.
+Recovery rate by action
+
+Share of cases that went on to pay, compared with the holdout that received no contact.
+
+Hold, no contact
+14.3%
+Retry prompt
+16.0%
+Payment link
+22.2%
+Voice call + link
+31.7%
+Free shipping
+19.4%
+Approved discount
+26.7%
+0%
+10%
+20%
+30%
+40%
+Holdout 14.5%
+
+Per-action rates are not lift. Each action goes to different kinds of cases. Per-action lift is estimated from the explore arm.
+
+Spend breakdown
+Action	Cases	Spend	Recoveries	Cost per recovery
+Hold, no contact	4,728	₹0	678	—
+Retry prompt	1,500	₹300	240	₹1.25
+Payment link	2,700	₹2,160	600	₹3.60
+Voice call + link	720	₹10,080	228	₹44.21
+Free shipping	432	₹26,266	84	₹312.69
+Approved discount	720	₹27,456	192	₹143.00
+Total	10,800	₹66,262	2,022	₹32.77
+
+Discount spend includes 10% margin given away on recovered orders. Free shipping includes the ₹60 subsidy.
+
+Simulated outcomes for demonstration. In production, these come from the randomised holdout.
+

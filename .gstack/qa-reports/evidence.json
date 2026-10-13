@@ -1,0 +1,142 @@
+{
+  "revision": "deployed-netlify-2026-10-12",
+  "runtime": "bun 1.4.3",
+  "cwd": "C:\\Users\\rijut\\triage\\.gstack\\qa-reports",
+  "limits": [
+    "checkpoints 001-024 store probe output verbatim for short results; long snapshot/text outputs are referenced to raw/NNN.txt or the session transcript rather than copied inline",
+    "probe 004 batched four tab clicks in one command (loop-rule deviation); results were discarded and re-run one tab at a time in probes 005-007",
+    "performance measured from one cold page load only; not scored",
+    "accessibility checked by DOM audit only (landmarks, labels, aria-current, alt); no screen reader or contrast measurement",
+    "browser Back/refresh behaviour after in-app navigation not tested",
+    "engine.test.js not run (browser-surface run on the deployed site)"
+  ],
+  "evidence": [],
+  "learning": [
+    {
+      "observationCommand": "$B goto https://triage-decision-layer.netlify.app/; $B snapshot -i; $B console --errors; $B screenshot screenshots/initial.png",
+      "hypothesis": "Verify KPI cards are consistent with the 40 rows (cost sum, counts) and that filter tabs filter correctly.",
+      "nextCommand": "$B js (sum of Cost column, row counts) then click @e7/@e8/@e9 and count rows"
+    },
+    {
+      "observationCommand": "$B js (tbody tr cost sum)",
+      "hypothesis": "Rows are not table rows; locate row elements by searching for CHK- buttons and sum their last cost cell.",
+      "nextCommand": "$B js (button rows containing CHK- , sum trailing rupee value)"
+    },
+    {
+      "observationCommand": "$B js (CHK- row buttons, cost sum)",
+      "hypothesis": "KPI total matches rows. Next check the Held tab filters to exactly the 3 Hold rows and that row counts per tab match the badges.",
+      "nextCommand": "$B click @e8; $B js (visible .feed-row count and action labels)"
+    },
+    {
+      "observationCommand": "loop: $B click @e8|@e9|@e7|@e6 then $B js (feed-row ids)",
+      "hypothesis": "Query must tolerate the header row; re-run one tab at a time.",
+      "nextCommand": "$B click @e8; $B js (feed-row ids, null-safe)"
+    },
+    {
+      "observationCommand": "$B click @e8; $B js (feed-row ids, null-safe)",
+      "hypothesis": "Held works; note label drift Hold/Held/No contact. Check Blocked tab next.",
+      "nextCommand": "$B click @e9; $B js (same query)"
+    },
+    {
+      "observationCommand": "$B click @e9; $B js (same query)",
+      "hypothesis": "Tabs filter correctly. Legend button 'Voice call + link 13' should filter to 13 voice rows.",
+      "nextCommand": "$B click @e16; $B js (same query)"
+    },
+    {
+      "observationCommand": "$B click @e16; $B js (rows, active, actions)",
+      "hypothesis": "Legend filter works (no tab shows pressed). Test search: 'hdfc' should match HDFC rows; check it combines with or resets the legend filter.",
+      "nextCommand": "$B fill @e1 hdfc; $B js (rows)"
+    },
+    {
+      "observationCommand": "$B fill @e1 hdfc; $B js (rows)",
+      "hypothesis": "Search ANDs with the legend filter. Next: a no-match query should show an empty state, not a blank table.",
+      "nextCommand": "$B fill @e1 zzzz; $B js (rows + feed container text)"
+    },
+    {
+      "observationCommand": "$B fill @e1 zzzz; $B js (rows, container text, tab labels)",
+      "hypothesis": "Empty state OK. Open a case row (holdout case CHK-4139) to verify the detail view explains the decision.",
+      "nextCommand": "$B fill @e1 ''; $B click @e6; $B click @e20; $B snapshot -D"
+    },
+    {
+      "observationCommand": "$B fill @e1 ''; $B click @e6; $B click @e20; $B snapshot -D",
+      "hypothesis": "Rows re-render after filter changes; click CHK-4139 via DOM and read the detail panel.",
+      "nextCommand": "$B js (click .feed-row containing CHK-4139); $B text"
+    },
+    {
+      "observationCommand": "$B js (click CHK-4139 row, read open panels)",
+      "hypothesis": "Detail panel opens. Check keyboard: Escape should close it and focus should be managed (no role=dialog seen).",
+      "nextCommand": "$B press Escape; $B js (detail open class, activeElement)"
+    },
+    {
+      "observationCommand": "$B press Escape; $B js (detail class, activeElement, row tabbability)",
+      "hypothesis": "Escape closes the panel; rows are keyboard reachable. Next: Policy page via nav link should render its view and update the URL/hash.",
+      "nextCommand": "$B js (click nav 'Policy'); $B text; $B snapshot -i"
+    },
+    {
+      "observationCommand": "$B js (click nav Policy; href -> location); $B js (visible view text); $B console --errors",
+      "hypothesis": "Before touching Approve policy (a possible mutation on a non-local target), check whether the app makes any network calls beyond static assets.",
+      "nextCommand": "$B network"
+    },
+    {
+      "observationCommand": "$B network",
+      "hypothesis": "Static-only app, no persistence. Policy controls are safe in an isolated headless tab. Get refs for policy controls.",
+      "nextCommand": "$B snapshot -i (policy view)"
+    },
+    {
+      "observationCommand": "$B snapshot -i (policy view)",
+      "hypothesis": "Search box still holds 'zzzz' after earlier clear attempt; note for later. Unchecking Payment link should change many decisions in Live impact and enable Approve.",
+      "nextCommand": "$B click @e9; $B js (live impact text, approve disabled)"
+    },
+    {
+      "observationCommand": "$B click @e9; $B js (approve disabled, status, impact text)",
+      "hypothesis": "Draft correctly previewed. Approving should update the Decision feed KPIs to Contacted 27 / Held 8 (as previewed).",
+      "nextCommand": "$B click @e7; $B js (click nav Decision feed; read KPI cards + tab badges + search value)"
+    },
+    {
+      "observationCommand": "$B click @e7; $B js (nav Decision feed; search value, visible rows, tabs, header)",
+      "hypothesis": "Approval propagated (27/8/5). The 'zzzz' search from probe 009 never cleared (my fill '' did not clear it), so 0 rows is expected. Clear it via keyboard and re-read KPIs.",
+      "nextCommand": "$B click @e1; $B press Control+A; $B press Backspace; $B js (visible rows, KPI cards)"
+    },
+    {
+      "observationCommand": "$B click @e1; $B press Control+A; $B press Backspace; $B js (visible rows, row cost sum, cards)",
+      "hypothesis": "Feed consistent after approval. Holdout-tagged cases (e.g. CHK-4139, 4106) are still contacted and change with policy; read the Holdout view to learn what Holdout is supposed to mean.",
+      "nextCommand": "$B js (click nav Holdout; visible view text)"
+    },
+    {
+      "observationCommand": "$B js (click nav Holdout; view text)",
+      "hypothesis": "Holdout view contradicts Decision feed (feed shows those holdout cases contacted with cost; explore cases with the engine pick). Check Outcomes for which numbers it uses.",
+      "nextCommand": "$B js (click nav Outcomes; view text)"
+    },
+    {
+      "observationCommand": "$B js (click nav Outcomes; view text)",
+      "hypothesis": "Outcomes arithmetic checks out; free shipping spend implies the ₹60 subsidy is charged on all 432 cases, not only the 84 recovered orders. Next: mobile layout at 375px.",
+      "nextCommand": "$B viewport 375x812; $B js (scrollWidth vs innerWidth, overflowing elements); $B screenshot"
+    },
+    {
+      "observationCommand": "$B viewport 375x812; $B js (nav feed); $B js (iw, scrollWidth, sidebar, overflowing elements)",
+      "hypothesis": "Mobile clipping confirmed via screenshot. Replay holdout contradiction from a fresh default-policy load: feed row vs holdout table for the same case IDs.",
+      "nextCommand": "$B viewport 1280x720; $B goto /; $B js (feed action+cost for holdout-tagged rows; Holdout table 'What happened' for same IDs; Contacted KPI)"
+    },
+    {
+      "observationCommand": "$B goto https://triage-decision-layer.netlify.app/; $B js (feed vs holdout replay)",
+      "hypothesis": "Use textContent for the hidden Holdout view; same state (fresh default load, no reload needed).",
+      "nextCommand": "$B js (same replay using textContent)"
+    },
+    {
+      "observationCommand": "$B js (same replay using textContent)",
+      "hypothesis": "Feed side replayed at default policy: all 6 holdout rows show a paid contact. Holdout table renders only on navigation; open it and read 'What happened'.",
+      "nextCommand": "$B js (click nav Holdout; read table rows + Treated)"
+    },
+    {
+      "observationCommand": "$B js (click nav Holdout; read table rows + Treated)",
+      "hypothesis": "Contradiction confirmed on fresh default state. Last probe: accessibility basics (unlabeled controls, landmarks, focus styles, img alt).",
+      "nextCommand": "$B js (a11y audit)"
+    }
+  ],
+  "verdict": {
+    "status": "inconclusive",
+    "open": [
+      "no evidence rows"
+    ]
+  }
+}

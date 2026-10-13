@@ -1,0 +1,47 @@
+
+QA_DEADLINE {"guard":"qa-deadline","event":"started","version":1,"startedAt":"2026-10-12T19:31:45.992Z","deadlineAt":"2026-10-12T19:46:45.992Z","budgetMs":900000,"observedAt":"2026-10-12T19:35:56.062Z","remainingMs":649930,"expired":false}
+--- BEGIN UNTRUSTED EXTERNAL CONTENT (source: https://triage-decision-layer.netlify.app/#policy) ---
+--- BEGIN UNTRUSTED EXTERNAL C​ONTENT (source: https://triage-decision-layer.netlify.app/#policy) ---
+  @e1 [searchbox] "Search cases"
+    @e2 [link] "Decision feed"
+    @e3 [link] "Policy"
+    @e4 [link] "Outcomes"
+    @e5 [link] "Holdout"
+  @e6 [button] "Reset to default"
+  @e7 [button] "Approve policy" [disabled]
+  @e8 [checkbox] "Retry prompt" [checked]
+  @e9 [checkbox] "Payment link" [checked]
+  @e10 [checkbox] "Voice call + link" [checked]
+  @e11 [checkbox] "Free shipping" [checked]
+  @e12 [checkbox] "Approved discount" [checked]
+  @e13 [checkbox] "Human follow up"
+  @e14 [slider] "Discount ceiling": "0.1"
+  @e15 [button] "Fewer contacts": −
+  @e16 [button] "More contacts": +
+  @e17 [slider] "Minimum order value for a voice call": "1500"
+  @e18 [slider] "Assumed margin": "0.35"
+  @e19 [slider] "Contact fatigue cost": "9"
+
+── cursor-interactive (not in ARIA tree) ──
+@c1 [cursor:pointer] "Retry prompt"
+@c2 [cursor:pointer] "Retry prompt"
+@c3 [cursor:pointer] "span"
+@c4 [cursor:pointer] "Payment link"
+@c5 [cursor:pointer] "Payment link"
+@c6 [cursor:pointer] "span"
+@c7 [cursor:pointer] "Voice call + link"
+@c8 [cursor:pointer] "Voice call + link"
+@c9 [cursor:pointer] "span"
+@c10 [cursor:pointer] "Free shipping"
+@c11 [cursor:pointer] "Free shipping"
+@c12 [cursor:pointer] "span"
+@c13 [cursor:pointer] "Approved discount"
+@c14 [cursor:pointer] "Approved discount"
+@c15 [cursor:pointer] "span"
+@c16 [cursor:pointer] "Human follow up"
+@c17 [cursor:pointer] "Human follow up"
+@c18 [cursor:pointer] "span"
+--- END UNTRUSTED EXTERNAL C​ONTENT ---
+--- END UNTRUSTED EXTERNAL CONTENT ---
+
+QA_DEADLINE {"guard":"qa-deadline","event":"finished","observedAt":"2026-10-12T19:35:57.009Z","deadlineAt":"2026-10-12T19:46:45.992Z","timedOut":false,"exitCode":0}

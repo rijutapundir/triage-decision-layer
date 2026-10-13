@@ -1,0 +1,6 @@
+{
+  "observationCommand": "bun \"$HOME/.claude/skills/gstack/bin/gstack-qa-deadline\" run deadline.json -- \"$B\" text",
+  "observed": "[browse] Starting server...\n--- BEGIN UNTRUSTED EXTERNAL CONTENT (source: about:blank) ---\n\n--- END UNTRUSTED EXTERNAL CONTENT ---\n",
+  "hypothesis": "Harness issue, not a product defect: the deadline guard ends the browse daemon with its process tree, so each guarded call starts a fresh browser at about:blank. Setup step (not a probe): started a persistent daemon outside the guard with `$B status` (PID 30928); guarded probes now attach to it. Reload the page under the guard.",
+  "nextCommand": "bun \"$HOME/.claude/skills/gstack/bin/gstack-qa-deadline\" run deadline.json -- \"$B\" goto https://triage-decision-layer.netlify.app/"
+}

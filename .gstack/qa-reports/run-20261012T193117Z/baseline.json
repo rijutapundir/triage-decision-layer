@@ -1,0 +1,13 @@
+{
+  "date": "2026-10-12",
+  "url": "https://triage-decision-layer.netlify.app/",
+  "healthScore": 99,
+  "issues": [
+    {"id": "ISSUE-009", "title": "At 768px with a case open, the feed shrinks to ~168px and KPI cards run under the detail panel", "severity": "low", "category": "visual"},
+    {"id": "ISSUE-010", "title": "At 768px the feed's Reason and Cost columns sit past the card edge, reachable only by horizontal scroll", "severity": "low", "category": "visual"},
+    {"id": "ISSUE-011", "title": "At 375px the Holdout tab is off-screen in the top strip with no scroll cue", "severity": "low", "category": "ux"},
+    {"id": "ISSUE-012", "title": "Case detail: Net value is not Expected gain minus Cost", "severity": "low", "category": "content"},
+    {"id": "ISSUE-013", "title": "Free shipping picks are explained as 'the option that gives away no margin'", "severity": "low", "category": "content"}
+  ],
+  "categoryScores": {"console": 100, "links": 100, "visual": 94, "functional": 100, "ux": 97, "performance": null, "content": 94, "accessibility": 100}
+}

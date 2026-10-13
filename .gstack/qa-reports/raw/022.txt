@@ -1,0 +1,6 @@
+page.evaluate: TypeError: Cannot read properties of null (reading '1')
+    at eval (eval at evaluate (:311:30), <anonymous>:1:542)
+    at eval (eval at evaluate (:311:30), <anonymous>:1:625)
+    at eval (<anonymous>)
+    at UtilityScript.evaluate (<anonymous>:311:30)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)

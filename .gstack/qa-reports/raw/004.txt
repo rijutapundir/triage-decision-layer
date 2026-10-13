@@ -1,0 +1,44 @@
+
+Clicked @e8 → now at https://triage-decision-layer.netlify.app/
+
+page.evaluate: TypeError: Cannot read properties of null (reading '0')
+    at eval (eval at evaluate (:311:30), <anonymous>:1:165)
+    at Array.map (<anonymous>)
+    at eval (eval at evaluate (:311:30), <anonymous>:1:130)
+    at eval (eval at evaluate (:311:30), <anonymous>:1:190)
+    at eval (<anonymous>)
+    at UtilityScript.evaluate (<anonymous>:311:30)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+Clicked @e9 → now at https://triage-decision-layer.netlify.app/
+
+page.evaluate: TypeError: Cannot read properties of null (reading '0')
+    at eval (eval at evaluate (:311:30), <anonymous>:1:165)
+    at Array.map (<anonymous>)
+    at eval (eval at evaluate (:311:30), <anonymous>:1:130)
+    at eval (eval at evaluate (:311:30), <anonymous>:1:190)
+    at eval (<anonymous>)
+    at UtilityScript.evaluate (<anonymous>:311:30)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+Clicked @e7 → now at https://triage-decision-layer.netlify.app/
+
+page.evaluate: TypeError: Cannot read properties of null (reading '0')
+    at eval (eval at evaluate (:311:30), <anonymous>:1:165)
+    at Array.map (<anonymous>)
+    at eval (eval at evaluate (:311:30), <anonymous>:1:130)
+    at eval (eval at evaluate (:311:30), <anonymous>:1:190)
+    at eval (<anonymous>)
+    at UtilityScript.evaluate (<anonymous>:311:30)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+Clicked @e6 → now at https://triage-decision-layer.netlify.app/
+
+page.evaluate: TypeError: Cannot read properties of null (reading '0')
+    at eval (eval at evaluate (:311:30), <anonymous>:1:165)
+    at Array.map (<anonymous>)
+    at eval (eval at evaluate (:311:30), <anonymous>:1:130)
+    at eval (eval at evaluate (:311:30), <anonymous>:1:190)
+    at eval (<anonymous>)
+    at UtilityScript.evaluate (<anonymous>:311:30)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)

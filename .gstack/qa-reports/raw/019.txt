@@ -1,0 +1,74 @@
+
+Holdout
+
+Cases Triage deliberately leaves alone, so the lift on Outcomes is measured, not assumed.
+
+Treated
+23
+Of 35 eligible cases today, acted on as chosen
+Holdout
+6
+10% of eligible cases, no contact
+Explore
+6
+10% get a random allowed action
+Price of measuring
+₹747
+Expected value given up today to keep the measurement honest
+Today's holdout and explore cases
+
+Blocked cases are left out: a gate stops contact for them anyway.
+
+Case ID	Order	Cause	Triage would have chosen	What happened
+CHK-4106	
+₹909
+UPI · Paytm
+	UPI timeout	Retry prompt	No contact (holdout)
+CHK-4109	
+₹399
+Card · SBI
+	OTP drop off	Retry prompt	Retry prompt (explore)
+CHK-4114	
+₹799
+Card · HDFC
+	Bank decline	Retry prompt	Free shipping (explore)
+CHK-4118	
+₹2,789
+Card · HDFC
+	Bank decline	Voice call + link	No contact (holdout)
+CHK-4121	
+₹519
+COD
+	Price hesitation	Hold, no contact	Approved discount (explore)
+CHK-4125	
+₹3,339
+Card · SBI
+	Bank decline	Voice call + link	Retry prompt (explore)
+CHK-4126	
+₹449
+Card · HDFC
+	Bank decline	Hold, no contact	No contact (holdout)
+CHK-4127	
+₹1,589
+Card · Axis
+	Bank decline	Voice call + link	Approved discount (explore)
+CHK-4129	
+₹1,779
+Card · HDFC
+	Price hesitation	Voice call + link	Approved discount (explore)
+CHK-4131	
+₹2,279
+COD
+	Price hesitation	Voice call + link	No contact (holdout)
+CHK-4134	
+₹3,379
+Card · HDFC
+	Bank decline	Voice call + link	No contact (holdout)
+CHK-4139	
+₹599
+Card · SBI
+	Bank decline	Retry prompt	No contact (holdout)
+Is the pilot big enough? Simulated
+
+To detect a 4pp lift over a 14.5% baseline with 95% confidence and 80% power, the holdout needs about 1,230 cases. At ~400 failed checkouts a day and a 10% holdout, that takes about 31 days. Before that, Outcomes shows assumptions, not results.
+

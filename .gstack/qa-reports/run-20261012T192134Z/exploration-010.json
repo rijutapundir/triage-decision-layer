@@ -1,0 +1,6 @@
+{
+  "observationCommand": "bun \"$HOME/.claude/skills/gstack/bin/gstack-qa-deadline\" run deadline.json -- \"$B\" screenshot C:/Users/rijut/triage/.gstack/qa-reports/run-20261012T192134Z/screenshots/mobile-feed.png",
+  "observed": "Screenshot saved: C:/Users/rijut/triage/.gstack/qa-reports/run-20261012T192134Z/screenshots/mobile-feed.png\n",
+  "hypothesis": "Mobile evidence captured. Next the tablet breakpoint (C5, untested last run): set 768x1024.",
+  "nextCommand": "bun \"$HOME/.claude/skills/gstack/bin/gstack-qa-deadline\" run deadline.json -- \"$B\" viewport 768x1024"
+}

@@ -1,0 +1,8 @@
+
+QA_DEADLINE {"guard":"qa-deadline","event":"started","version":1,"startedAt":"2026-10-12T19:22:21.525Z","deadlineAt":"2026-10-12T19:37:21.525Z","budgetMs":900000,"observedAt":"2026-10-12T19:22:54.316Z","remainingMs":867209,"expired":false}
+[browse] Starting server...
+--- BEGIN UNTRUSTED EXTERNAL CONTENT (source: about:blank) ---
+
+--- END UNTRUSTED EXTERNAL CONTENT ---
+
+QA_DEADLINE {"guard":"qa-deadline","event":"finished","observedAt":"2026-10-12T19:23:07.501Z","deadlineAt":"2026-10-12T19:37:21.525Z","timedOut":false,"exitCode":0}

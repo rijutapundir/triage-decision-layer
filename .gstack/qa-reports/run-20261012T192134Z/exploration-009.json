@@ -1,0 +1,6 @@
+{
+  "observationCommand": "bun \"$HOME/.claude/skills/gstack/bin/gstack-qa-deadline\" run deadline.json -- \"$B\" js \"(()=>{[...document.querySelectorAll('nav a, aside a')].find(x=>x.innerText.trim()==='Decision feed').click(); const s=document.querySelector('aside, .sidebar'); ... (full command in exploration-008.json nextCommand)})()\"",
+  "observed": "{\"vw\":375,\"sidebar\":{\"tag\":\"ASIDE\",\"cls\":\"sidebar\",\"x\":0,\"w\":240,\"display\":\"block\",\"vis\":\"visible\",\"transform\":\"none\"},\"mainX\":240,\"mainW\":135,\"docScrollW\":375,\"overflowCount\":12,\"over\":[\"DIV.card stat:484\",\"DIV.k:459\",\"DIV.v:459\",\"DIV.stat-sub:459\",\"DIV.card stat:484\",\"DIV.k:459\",\"DIV.v:459\",\"DIV.stat-sub:459\",\"DIV.card stat stat-key:484\",\"DIV.k:459\",\"DIV.v:459\",\"DIV.stat-sub:459\"],\"toggles\":[]}\n",
+  "hypothesis": "ISSUE-002 unchanged: 240px sidebar visible, main gets 135px, KPI cards extend to x=484, no toggle. Capture a screenshot as visual evidence.",
+  "nextCommand": "bun \"$HOME/.claude/skills/gstack/bin/gstack-qa-deadline\" run deadline.json -- \"$B\" screenshot C:/Users/rijut/triage/.gstack/qa-reports/run-20261012T192134Z/screenshots/mobile-feed.png"
+}

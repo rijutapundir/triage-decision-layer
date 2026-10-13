@@ -1,0 +1,198 @@
+{
+  "revision": "deployed-netlify-2026-10-12T1931Z",
+  "runtime": "bun 1.4.3",
+  "cwd": "C:\\Users\\rijut\\triage\\.gstack\\qa-reports\\run-20261012T193117Z",
+  "limits": [
+    "browser-only run: checkpoints 001-035 are browser checkpoints, no functional evidence rows",
+    "long outputs (002, 003, 004, 011, 013, 015, 030) are referenced to raw-NNN.txt or condensed in checkpoint 'observed' with the verbatim output kept in raw files or the session transcript",
+    "probe 036 result was not checkpointed because exploration stopped after it (per loop rule, stop writes the report, not a checkpoint)",
+    "gstack-qa-deadline guard kills the browse daemon on Windows when it is the daemon's parent; the daemon was started once outside the guard (setup, not a probe) and all probes ran guarded",
+    "performance from page loads only, not scored; accessibility DOM-level only (Escape, aria-current, aria-hidden); no screen reader or contrast measurement",
+    "sliders and contact +/- controls not exercised (C4 partial); search and filter tabs not re-run this pass",
+    "engine.test.js not run (browser-surface run on the deployed site)"
+  ],
+  "evidence": [],
+  "learning": [
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse goto https://triage-decision-layer.netlify.app/",
+      "hypothesis": "Page loaded 200; read full feed text to get KPI header and holdout rows for R1/R5/R6 baseline.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse text"
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse text",
+      "hypothesis": "Feed now treats holdout as no contact. Confirm the Holdout view agrees per case (R1), read share labels (R5), and check whether nav changes URL (R4).",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"(()=>{const a=[...document.querySelectorAll('nav a, aside a')].find(x=>x.textContent.trim()==='Holdout');a.click();return JSON.stringify({href:a.getAttribute('href'),url:location.href,text:document.querySelector('main').innerText.slice(0,6000)})})()\""
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"(()=>{const a=[...document.querySelectorAll('nav a, aside a')].find(x=>x.textContent.trim()==='Holdout');a.click();return JSON.stringify({href:a.getAttribute('href'),url:location.href,text:document.querySelector('main').innerText.slice(0,6000)})})()\"",
+      "hypothesis": "Nav now uses #holdout and the URL changed (R4). main innerText was read synchronously and still shows the feed; read the page text again now that the view has switched.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse text"
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse text",
+      "hypothesis": "R1 and R5 pass. For R4, check that a refresh on #holdout keeps the Holdout view.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse reload"
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse reload",
+      "hypothesis": "Reload done; read which view is visible and which nav item is aria-current to decide whether refresh restores the Holdout view.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"JSON.stringify({url:location.href,current:[...document.querySelectorAll('[aria-current]')].map(e=>e.textContent.trim()),visibleH1:[...document.querySelectorAll('main h1, main h2')].filter(h=>h.offsetParent!==null).map(h=>h.textContent.trim()).slice(0,6),storage:localStorage.length+sessionStorage.length})\""
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"JSON.stringify({url:location.href,current:[...document.querySelectorAll('[aria-current]')].map(e=>e.textContent.trim()),visibleH1:[...document.querySelectorAll('main h1, main h2')].filter(h=>h.offsetParent!==null).map(h=>h.textContent.trim()).slice(0,6),storage:localStorage.length+sessionStorage.length})\"",
+      "hypothesis": "Refresh restores Holdout. Next: browser Back should return to the feed (#holdout was pushed from /).",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse back"
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse back",
+      "hypothesis": "URL went back to /. Check the visible view switched back to the Decision feed (not stuck on Holdout).",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"JSON.stringify({url:location.href,current:[...document.querySelectorAll('[aria-current]')].map(e=>e.textContent.trim()),visibleH1:[...document.querySelectorAll('main h1, main h2')].filter(h=>h.offsetParent!==null).map(h=>h.textContent.trim()).slice(0,6)})\""
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"JSON.stringify({url:location.href,current:[...document.querySelectorAll('[aria-current]')].map(e=>e.textContent.trim()),visibleH1:[...document.querySelectorAll('main h1, main h2')].filter(h=>h.offsetParent!==null).map(h=>h.textContent.trim()).slice(0,6)})\"",
+      "hypothesis": "R4 passes (hash routes, refresh and Back work). Open CHK-4139 detail to check R3 (free shipping cost), R7 (reason wording) and R8 ('Not allowed' reason).",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"(()=>{const r=[...document.querySelectorAll('[role=button]')].find(e=>e.textContent.includes('CHK-4139'));r.click();const d=document.querySelector('[role=dialog], .detail, .drawer, aside.panel');return JSON.stringify({url:location.href,found:!!d,text:d?d.innerText:null})})()\""
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"(()=>{const r=[...document.querySelectorAll('[role=button]')].find(e=>e.textContent.includes('CHK-4139'));r.click();const d=document.querySelector('[role=dialog], .detail, .drawer, aside.panel');return JSON.stringify({url:location.href,found:!!d,text:d?d.innerText:null})})()\"",
+      "hypothesis": "R7 and R8 pass; free shipping cost now ₹9.80 (R3 likely fixed). Net value does not equal Expected gain − Cost in any row (e.g. Payment link 34.44 − 9.80 = 24.64 vs 15.57; Human follow up −34.03 − 129 = −163.03 vs −52.90). Check Outcomes spend table for R3.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse goto https://triage-decision-layer.netlify.app/#outcomes"
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse goto https://triage-decision-layer.netlify.app/#outcomes",
+      "hypothesis": "Same-document hash navigation (status unknown is expected). Read the visible Outcomes section text plus console error count.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"[...document.querySelectorAll('main section, main > div')].filter(s=>s.offsetParent!==null).map(s=>s.innerText).join('\\n---\\n').slice(0,5000)\""
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"[...document.querySelectorAll('main section, main > div')].filter(s=>s.offsetParent!==null).map(s=>s.innerText).join('\\n---\\n').slice(0,5000)\"",
+      "hypothesis": "R3 passes: free shipping spend ≈ 84 × ₹60 + 432 × ₹0.80. All totals and rates reconcile. Next: Policy view controls for C3.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse goto https://triage-decision-layer.netlify.app/#policy"
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse goto https://triage-decision-layer.netlify.app/#policy",
+      "hypothesis": "Get interactive refs for the policy toggles, sliders, Approve and Reset.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse snapshot -i"
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse snapshot -i",
+      "hypothesis": "Default policy loaded, Approve disabled. Turn Payment link off to create a draft (approved in D1, in-tab only).",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse click @e9"
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse click @e9",
+      "hypothesis": "Check draft state: Approve enabled, draft label, impact summary.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"JSON.stringify({approveDisabled:[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='Approve policy').disabled,text:[...document.querySelectorAll('main section, main > div')].filter(s=>s.offsetParent!==null)[0].innerText.slice(0,2500)})\""
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"JSON.stringify({approveDisabled:[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='Approve policy').disabled,text:[...document.querySelectorAll('main section, main > div')].filter(s=>s.offsetParent!==null)[0].innerText.slice(0,2500)})\"",
+      "hypothesis": "Draft state correct. Approve, then confirm the feed KPIs match the predicted 26 / 9 / 5 / ₹395.80.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse click @e7"
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse click @e7",
+      "hypothesis": "Approved. Read feed KPI line and policy status from the DOM to confirm the feed reflects the new policy.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"JSON.stringify({kpi:(document.body.textContent.match(/Cases\\s*40.{0,160}?Total cost\\s*₹[\\d.,]+/s)||[''])[0].replace(/\\s+/g,' '),draft:/Draft, not yet approved/.test(document.body.innerText),approveDisabled:[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='Approve policy').disabled,storage:localStorage.length+sessionStorage.length})\""
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"JSON.stringify({kpi:(document.body.textContent.match(/Cases\\s*40.{0,160}?Total cost\\s*₹[\\d.,]+/s)||[''])[0].replace(/\\s+/g,' '),draft:/Draft, not yet approved/.test(document.body.innerText),approveDisabled:[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='Approve policy').disabled,storage:localStorage.length+sessionStorage.length})\"",
+      "hypothesis": "Approve applied (matches draft preview) and no storage written. Click Reset to default to check it restores the default policy.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse click @e6"
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse click @e6",
+      "hypothesis": "Reset clicked. Check Payment link checkbox state, draft label, Approve state and feed KPI to see what Reset does (draft vs applied).",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"JSON.stringify({payLink:[...document.querySelectorAll('input[type=checkbox]')].map(c=>(c.closest('label')||c.parentElement).textContent.trim().slice(0,20)+':'+c.checked),kpi:(document.body.textContent.match(/Cases\\s*40.{0,160}?Total cost\\s*₹[\\d.,]+/s)||[''])[0].replace(/\\s+/g,' '),draft:/Draft, not yet approved/.test(document.body.innerText),approveDisabled:[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='Approve policy').disabled,impact:(document.body.innerText.match(/\\d+ of 40 decisions change|No decisions change[^\\n]*/)||[null])[0]})\""
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"JSON.stringify({payLink:[...document.querySelectorAll('input[type=checkbox]')].map(c=>(c.closest('label')||c.parentElement).textContent.trim().slice(0,20)+':'+c.checked),kpi:(document.body.textContent.match(/Cases\\s*40.{0,160}?Total cost\\s*₹[\\d.,]+/s)||[''])[0].replace(/\\s+/g,' '),draft:/Draft, not yet approved/.test(document.body.innerText),approveDisabled:[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='Approve policy').disabled,impact:(document.body.innerText.match(/\\d+ of 40 decisions change|No decisions change[^\\n]*/)||[null])[0]})\"",
+      "hypothesis": "Reset restores the default as a draft against the approved policy; consistent. Move to R2: set a 375x812 viewport on the feed.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse viewport 375x812"
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse viewport 375x812",
+      "hypothesis": "Load the feed fresh at 375px (also resets in-tab policy state).",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse goto https://triage-decision-layer.netlify.app/"
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse goto https://triage-decision-layer.netlify.app/",
+      "hypothesis": "Measure sidebar visibility/width, any menu toggle, and elements whose right edge exceeds 375px.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"(()=>{const s=document.querySelector('aside, .sidebar');const r=s&&s.getBoundingClientRect();const over=[...document.querySelectorAll('body *')].filter(e=>e.offsetParent!==null&&e.getBoundingClientRect().right>376).map(e=>e.tagName+'.'+[...e.classList].join('.')+':'+Math.round(e.getBoundingClientRect().right)).slice(0,12);return JSON.stringify({vw:innerWidth,scrollW:document.documentElement.scrollWidth,sidebar:s?{display:getComputedStyle(s).display,w:Math.round(r.width),x:Math.round(r.x)}:null,toggle:[...document.querySelectorAll('button')].filter(b=>/menu|nav/i.test((b.getAttribute('aria-label')||'')+b.textContent)).map(b=>(b.getAttribute('aria-label')||b.textContent).trim()+':'+(b.offsetParent!==null)),overflow:over})})()\""
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"(()=>{const s=document.querySelector('aside, .sidebar');const r=s&&s.getBoundingClientRect();const over=[...document.querySelectorAll('body *')].filter(e=>e.offsetParent!==null&&e.getBoundingClientRect().right>376).map(e=>e.tagName+'.'+[...e.classList].join('.')+':'+Math.round(e.getBoundingClientRect().right)).slice(0,12);return JSON.stringify({vw:innerWidth,scrollW:document.documentElement.scrollWidth,sidebar:s?{display:getComputedStyle(s).display,w:Math.round(r.width),x:Math.round(r.x)}:null,toggle:[...document.querySelectorAll('button')].filter(b=>/menu|nav/i.test((b.getAttribute('aria-label')||'')+b.textContent)).map(b=>(b.getAttribute('aria-label')||b.textContent).trim()+':'+(b.offsetParent!==null)),overflow:over})})()\"",
+      "hypothesis": "Sidebar is now full-width (likely a top nav strip), page does not overflow; one nav item ends at x=471. Screenshot to see whether that item is reachable (scrollable strip) or clipped.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse screenshot screenshots/mobile-feed.png"
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse screenshot screenshots/mobile-feed.png",
+      "hypothesis": "Screenshot shows a top tab strip: Decision feed, Policy, Outcomes; Holdout not visible. KPI cards fit. Check whether the strip scrolls horizontally so Holdout is reachable, and the filter tab row too.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"(()=>{const h=[...document.querySelectorAll('a.nav-item')].find(a=>a.textContent.trim()==='Holdout');const p=h.parentElement;const cs=getComputedStyle(p);const f=[...document.querySelectorAll('[role=tablist], .tabs')][0];return JSON.stringify({holdoutRect:[Math.round(h.getBoundingClientRect().left),Math.round(h.getBoundingClientRect().right)],navOverflowX:cs.overflowX,navScrollW:p.scrollWidth,navClientW:p.clientWidth,filterTabs:f?{overflowX:getComputedStyle(f).overflowX,scrollW:f.scrollWidth,clientW:f.clientWidth}:null})})()\""
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"(()=>{const h=[...document.querySelectorAll('a.nav-item')].find(a=>a.textContent.trim()==='Holdout');const p=h.parentElement;const cs=getComputedStyle(p);const f=[...document.querySelectorAll('[role=tablist], .tabs')][0];return JSON.stringify({holdoutRect:[Math.round(h.getBoundingClientRect().left),Math.round(h.getBoundingClientRect().right)],navOverflowX:cs.overflowX,navScrollW:p.scrollWidth,navClientW:p.clientWidth,filterTabs:f?{overflowX:getComputedStyle(f).overflowX,scrollW:f.scrollWidth,clientW:f.clientWidth}:null})})()\"",
+      "hypothesis": "The nav item's parent does not scroll (overflow-x visible). Walk ancestors to find whether any one scrolls; if none does and page scrollWidth is 375, Holdout is unreachable by tap at 375px. Then try scrolling it into view.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"(()=>{const h=[...document.querySelectorAll('a.nav-item')].find(a=>a.textContent.trim()==='Holdout');const chain=[];for(let e=h.parentElement;e&&e!==document.documentElement;e=e.parentElement){const c=getComputedStyle(e);chain.push(e.tagName+'.'+[...e.classList].join('.')+' ox='+c.overflowX+' sw='+e.scrollWidth+' cw='+e.clientWidth)}h.scrollIntoView({inline:'end',block:'nearest'});const r=h.getBoundingClientRect();const hit=document.elementFromPoint(Math.min(r.left+10,374),r.top+r.height/2);return JSON.stringify({chain,afterScroll:[Math.round(r.left),Math.round(r.right)],hitIsHoldout:!!hit&&h.contains(hit)})})()\""
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"(()=>{const h=[...document.querySelectorAll('a.nav-item')].find(a=>a.textContent.trim()==='Holdout');const chain=[];for(let e=h.parentElement;e&&e!==document.documentElement;e=e.parentElement){const c=getComputedStyle(e);chain.push(e.tagName+'.'+[...e.classList].join('.')+' ox='+c.overflowX+' sw='+e.scrollWidth+' cw='+e.clientWidth)}h.scrollIntoView({inline:'end',block:'nearest'});const r=h.getBoundingClientRect();const hit=document.elementFromPoint(Math.min(r.left+10,374),r.top+r.height/2);return JSON.stringify({chain,afterScroll:[Math.round(r.left),Math.round(r.right)],hitIsHoldout:!!hit&&h.contains(hit)})})()\"",
+      "hypothesis": "Holdout reachable by horizontal scroll of aside.sidebar; only the affordance is missing (Low). Check console errors across the session for C1/C4.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse console --errors"
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse console --errors",
+      "hypothesis": "0 console errors. Check network log for any non-GET request or third-party call (C2 mutation gate) and asset statuses.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse network"
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse network",
+      "hypothesis": "C2 passes: only same-origin GETs. Replay the case-detail observation (probe 009) from a fresh default load at desktop width to confirm the Net value vs Expected gain − Cost mismatch.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse viewport 1280x800"
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse viewport 1280x800",
+      "hypothesis": "Fresh default load needed for the exact replay of probe 009.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse goto https://triage-decision-layer.netlify.app/"
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse goto https://triage-decision-layer.netlify.app/",
+      "hypothesis": "Same initial state as probe 009. Re-run its exact command.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"(()=>{const r=[...document.querySelectorAll('[role=button]')].find(e=>e.textContent.includes('CHK-4139'));r.click();const d=document.querySelector('[role=dialog], .detail, .drawer, aside.panel');return JSON.stringify({url:location.href,found:!!d,text:d?d.innerText:null})})()\""
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"(()=>{const r=[...document.querySelectorAll('[role=button]')].find(e=>e.textContent.includes('CHK-4139'));r.click();const d=document.querySelector('[role=dialog], .detail, .drawer, aside.panel');return JSON.stringify({url:location.href,found:!!d,text:d?d.innerText:null})})()\"",
+      "hypothesis": "Replay confirms. Net value = Expected gain − Hold's ₹18.87 in every row, so Expected gain is already net of cost; the column labels mislead (Low content). Next: tablet layout C5.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse viewport 768x1024"
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse viewport 768x1024",
+      "hypothesis": "Measure layout at 768px (detail panel still open from probe 030): page overflow, sidebar size, elements past the right edge.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"(()=>{const s=document.querySelector('aside.sidebar');const r=s.getBoundingClientRect();const over=[...document.querySelectorAll('body *')].filter(e=>e.offsetParent!==null&&e.getBoundingClientRect().right>769).map(e=>e.tagName+'.'+[...e.classList].join('.')+':'+Math.round(e.getBoundingClientRect().right)).slice(0,12);const d=document.querySelector('[role=dialog], .detail, .drawer, aside.panel');const dr=d&&d.getBoundingClientRect();return JSON.stringify({vw:innerWidth,scrollW:document.documentElement.scrollWidth,sidebar:{w:Math.round(r.width),h:Math.round(r.height)},detail:d?{x:Math.round(dr.x),w:Math.round(dr.width),visible:d.offsetParent!==null||getComputedStyle(d).position==='fixed'}:null,overflow:over})})()\""
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"(()=>{const s=document.querySelector('aside.sidebar');const r=s.getBoundingClientRect();const over=[...document.querySelectorAll('body *')].filter(e=>e.offsetParent!==null&&e.getBoundingClientRect().right>769).map(e=>e.tagName+'.'+[...e.classList].join('.')+':'+Math.round(e.getBoundingClientRect().right)).slice(0,12);const d=document.querySelector('[role=dialog], .detail, .drawer, aside.panel');const dr=d&&d.getBoundingClientRect();return JSON.stringify({vw:innerWidth,scrollW:document.documentElement.scrollWidth,sidebar:{w:Math.round(r.width),h:Math.round(r.height)},detail:d?{x:Math.round(dr.x),w:Math.round(dr.width),visible:d.offsetParent!==null||getComputedStyle(d).position==='fixed'}:null,overflow:over})})()\"",
+      "hypothesis": "At 768 the 240px sidebar stays and feed .num cells (Cost column) end at x=793, past the 768 edge, with no page scroll. Screenshot to see if Cost is clipped (detail panel may cover it).",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse screenshot screenshots/tablet-feed.png"
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse screenshot screenshots/tablet-feed.png",
+      "hypothesis": "Screenshot: 240px sidebar + 360px detail panel leave the feed ~168px wide; heading wraps, KPI cards (₹382.80, 'Contacted 27 · Hold 8 ·') run under the panel. Press Escape to close the panel (C6) and re-measure the feed alone at 768.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse press Escape"
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse press Escape",
+      "hypothesis": "Check the detail panel closed, then measure feed width and overflow at 768 without it.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"(()=>{const d=document.querySelector('[role=dialog], .detail, .drawer, aside.panel');const dr=d&&d.getBoundingClientRect();const m=document.querySelector('main').getBoundingClientRect();const over=[...document.querySelectorAll('body *')].filter(e=>e.offsetParent!==null&&e.getBoundingClientRect().right>769).map(e=>e.tagName+'.'+[...e.classList].join('.')+':'+Math.round(e.getBoundingClientRect().right)).slice(0,6);return JSON.stringify({detail:d?{x:Math.round(dr.x),w:Math.round(dr.width),display:getComputedStyle(d).display,hidden:d.hidden,ariaHidden:d.getAttribute('aria-hidden')}:null,main:{x:Math.round(m.x),w:Math.round(m.width)},overflow:over})})()\""
+    },
+    {
+      "observationCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"(()=>{const d=document.querySelector('[role=dialog], .detail, .drawer, aside.panel');const dr=d&&d.getBoundingClientRect();const m=document.querySelector('main').getBoundingClientRect();const over=[...document.querySelectorAll('body *')].filter(e=>e.offsetParent!==null&&e.getBoundingClientRect().right>769).map(e=>e.tagName+'.'+[...e.classList].join('.')+':'+Math.round(e.getBoundingClientRect().right)).slice(0,6);return JSON.stringify({detail:d?{x:Math.round(dr.x),w:Math.round(dr.width),display:getComputedStyle(d).display,hidden:d.hidden,ariaHidden:d.getAttribute('aria-hidden')}:null,main:{x:Math.round(m.x),w:Math.round(m.width)},overflow:over})})()\"",
+      "hypothesis": "Escape closes the panel (C6). Feed rows' Reason and Cost cells end at x=931/1023 inside a 528px main. Find whether any ancestor scrolls horizontally (reachable) or clips them, and screenshot the result.",
+      "nextCommand": "bun ~/.claude/skills/gstack/bin/gstack-qa-deadline run deadline.json -- ~/.claude/skills/gstack/browse/dist/browse js \"(()=>{const n=document.querySelector('div.num');const chain=[];for(let e=n.parentElement;e&&e!==document.documentElement;e=e.parentElement){const c=getComputedStyle(e);if(c.overflowX!=='visible'||e.scrollWidth>e.clientWidth+1)chain.push(e.tagName+'.'+[...e.classList].join('.')+' ox='+c.overflowX+' sw='+e.scrollWidth+' cw='+e.clientWidth)}return JSON.stringify(chain)})()\""
+    }
+  ],
+  "verdict": {
+    "status": "inconclusive",
+    "open": [
+      "no evidence rows"
+    ]
+  }
+}

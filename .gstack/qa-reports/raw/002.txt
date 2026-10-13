@@ -1,0 +1,5 @@
+
+QA_DEADLINE {"guard":"qa-deadline","event":"started","version":1,"startedAt":"2026-10-12T18:58:56.818Z","deadlineAt":"2026-10-12T19:13:56.818Z","budgetMs":900000,"observedAt":"2026-10-12T18:59:42.178Z","remainingMs":854640,"expired":false}
+{"rows":0,"sum":"0.00","url":"https://triage-decision-layer.netlify.app/","title":"Triage","lang":"en","h1":["H1:Decision feed","H1:Policy","H2:Live impact vs approved policy, all cases","H1:Outcomes","H2:Recovery rate by action","H2:Spend breakdown","H1:Holdout","H2:Today's holdout and explore cases","H2:Is the pilot big enough? Simulated"]}
+
+QA_DEADLINE {"guard":"qa-deadline","event":"finished","observedAt":"2026-10-12T18:59:43.663Z","deadlineAt":"2026-10-12T19:13:56.818Z","timedOut":false,"exitCode":0}

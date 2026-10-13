@@ -1,0 +1,1 @@
+{"detailClass":"detail","active":"BUTTON.tab active","rowsTabbable":40,"rowsRole":40,"remaining":0}

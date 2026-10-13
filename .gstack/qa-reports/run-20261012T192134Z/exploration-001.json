@@ -1,0 +1,6 @@
+{
+  "observationCommand": "cd /c/Users/rijut/triage/.gstack/qa-reports/run-20261012T192134Z && bun \"$HOME/.claude/skills/gstack/bin/gstack-qa-deadline\" run deadline.json -- \"$B\" goto https://triage-decision-layer.netlify.app/",
+  "observed": "[browse] Starting server...\nNavigated to https://triage-decision-layer.netlify.app/ (200)\n",
+  "hypothesis": "Page loaded 200. Read full page text to check the feed KPIs and holdout rows (R1, R6, C1).",
+  "nextCommand": "bun \"$HOME/.claude/skills/gstack/bin/gstack-qa-deadline\" run deadline.json -- \"$B\" text"
+}

@@ -1,0 +1,6 @@
+{
+  "observationCommand": "bun \"$HOME/.claude/skills/gstack/bin/gstack-qa-deadline\" run deadline.json -- \"$B\" text",
+  "observed": "VERBATIM OUTPUT STORED IN raw-004.txt (6 KB; not inlined, disclosed as a limit). Key lines: 'Cases4032 contacted, 3 held, 5 blockedTotal cost₹516.70Messaging, calls and fatigue across contacted cases'; 'CHK-4139₹599Card · SBIBank declinePayment linkHoldoutBank decline. Equivalent to approved discount in net value; took the cheaper rung.₹9.80'; 'CHK-4134₹3,379Card · HDFCBank declineVoice call + linkHoldout...₹27.50'; 'UPI timeout. Beats retry prompt by Rs 20 in net value.'; 'Hold 3Payment link 19Voice call + link 13Blocked 5'",
+  "hypothesis": "Feed still shows holdout cases with paid actions and 32 contacted / ₹516.70 (same as prior). Open the Holdout view and read what it says happened to the same IDs, plus the URL (R1, R4, R5).",
+  "nextCommand": "bun \"$HOME/.claude/skills/gstack/bin/gstack-qa-deadline\" run deadline.json -- \"$B\" js \"(()=>{const a=[...document.querySelectorAll('nav a, aside a')].find(x=>x.innerText.trim()==='Holdout'); a.click(); return JSON.stringify({href:a.getAttribute('href'), url:location.href, text:document.querySelector('main').innerText.slice(0,6000)})})()\""
+}

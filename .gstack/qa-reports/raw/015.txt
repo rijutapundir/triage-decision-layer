@@ -1,0 +1,27 @@
+
+--- BEGIN UNTRUSTED EXTERNAL CONTENT (source: https://triage-decision-layer.netlify.app/) ---
+--- BEGIN UNTRUSTED EXTERNAL C​ONTENT (source: https://triage-decision-layer.netlify.app/) ---
+  @e1 [searchbox] "Search cases": zzzz
+    @e2 [link] "Decision feed"
+    @e3 [link] "Policy"
+    @e4 [link] "Outcomes"
+    @e5 [link] "Holdout"
+  @e6 [button] "Reset to default"
+  @e7 [button] "Approve policy" [disabled]
+  @e8 [checkbox] "Retry prompt" [checked]
+  @e9 [checkbox] "Payment link" [checked]
+  @e10 [checkbox] "Voice call + link" [checked]
+  @e11 [checkbox] "Free shipping" [checked]
+  @e12 [checkbox] "Approved discount" [checked]
+  @e13 [checkbox] "Human follow up"
+  @e14 [slider] "Discount ceiling": "0.1"
+  @e15 [button] "Fewer contacts": −
+  @e16 [button] "More contacts": +
+  @e17 [slider] "Minimum order value for a voice call": "1500"
+  @e18 [slider] "Assumed margin": "0.35"
+  @e19 [slider] "Contact fatigue cost": "9"
+
+── cursor-interactive (not in ARIA tree) ──
+--- END UNTRUSTED EXTERNAL C​ONTENT ---
+--- END UNTRUSTED EXTERNAL CONTENT ---
+

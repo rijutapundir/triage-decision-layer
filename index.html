@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Triage</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">Triage</div>
+      <div class="merchant" id="merchant-name"></div>
+      <div class="topbar-right">
+        <label class="search">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="9" cy="9" r="6"/><path d="M13.5 13.5 17 17"/></svg>
+          <input type="search" id="search" placeholder="Search cases by ID, item or bank" aria-label="Search cases">
+        </label>
+        <span class="badge"><span class="badge-full">Prototype, synthetic data</span><span class="badge-short">Synthetic</span></span>
+        <span class="avatar" id="avatar" aria-hidden="true"></span>
+      </div>
+    </header>
+
+    <div class="body">
+      <aside class="sidebar">
+        <nav>
+          <div class="nav-section">Recovery</div>
+          <a class="nav-item active" href="#feed" data-view="feed" aria-current="page">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h9"/></svg>Decision feed</a>
+          <a class="nav-item" href="#policy" data-view="policy">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5 16 5v4.5c0 3.7-2.6 6.6-6 8-3.4-1.4-6-4.3-6-8V5z"/><path d="m7.5 10 1.8 1.8L13 8"/></svg>Policy</a>
+
+          <div class="nav-section">Measurement</div>
+          <a class="nav-item" href="#outcomes" data-view="outcomes">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 16h14M5 13V9M10 13V5M15 13V7"/></svg>Outcomes</a>
+          <a class="nav-item" href="#holdout" data-view="holdout">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M10 3v14"/></svg>Holdout</a>
+        </nav>
+      </aside>
+
+      <main class="main">
+        <div class="content">
+          <section class="view" id="view-feed">
+            <div class="page-head">
+              <div>
+                <h1>Decision feed</h1>
+                <p class="muted">Every failed or abandoned checkout, and what Triage decided to do about it.</p>
+              </div>
+            </div>
+
+            <div class="summary" id="summary"></div>
+
+            <div class="card feed-card">
+              <div class="card-top">
+                <div class="tabs" id="filters" role="group" aria-label="Filter cases"></div>
+                <div class="mix" id="mix" role="group" aria-label="Decision mix"></div>
+              </div>
+              <div class="feed">
+                <div class="feed-row feed-head">
+                  <div>Time</div>
+                  <div>Order</div>
+                  <div>Cause</div>
+                  <div>Action</div>
+                  <div class="col-reason">Reason</div>
+                  <div class="num">Cost</div>
+                </div>
+                <div id="feed"></div>
+                <p class="empty" id="feed-empty" hidden>No cases match.</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="view" id="view-policy" hidden>
+            <div class="page-head">
+              <div>
+                <h1>Policy</h1>
+                <p class="approve-once">Approve once: every action inside this policy then runs on its own, with no sign-off per case. Nothing outside it ever runs.</p>
+              </div>
+              <div class="policy-actions">
+                <span class="status" id="policy-status"></span>
+                <button type="button" class="link" id="reset">Reset to default</button>
+                <button type="button" class="btn btn-primary" id="approve">Approve policy</button>
+              </div>
+            </div>
+            <div class="policy-grid">
+              <div class="policy-controls" id="policy-controls"></div>
+              <aside class="card impact" aria-live="polite">
+                <h2>Live impact <span class="muted">vs approved policy, all cases</span></h2>
+                <div id="impact"></div>
+              </aside>
+            </div>
+          </section>
+
+          <section class="view" id="view-outcomes" hidden>
+            <div class="page-head">
+              <div>
+                <h1>Outcomes</h1>
+                <p class="muted">30-day pilot, simulated.</p>
+              </div>
+              <span class="sim-pill">Simulated</span>
+            </div>
+
+            <div class="summary" id="outcome-stats"></div>
+
+            <div class="card chart-card">
+              <div class="card-head">
+                <h2>Recovery rate by action</h2>
+                <p class="muted">Share of cases that went on to pay, compared with the holdout that received no contact.</p>
+              </div>
+              <div class="rate-chart" id="rate-chart"></div>
+            </div>
+
+            <div class="card spend-card">
+              <div class="card-head">
+                <h2>Spend breakdown</h2>
+              </div>
+              <table class="data-table" id="spend-table"></table>
+              <p class="table-foot" id="spend-footnote"></p>
+            </div>
+
+            <p class="sim-note" id="sim-note"></p>
+          </section>
+
+          <section class="view" id="view-holdout" hidden>
+            <div class="page-head">
+              <div>
+                <h1>Holdout</h1>
+                <p class="muted">Cases Triage deliberately leaves alone, so the lift on Outcomes is measured, not assumed.</p>
+              </div>
+            </div>
+
+            <div class="summary" id="holdout-stats"></div>
+
+            <div class="card holdout-card">
+              <div class="card-head">
+                <h2>Today's holdout and explore cases</h2>
+                <p class="muted">Blocked cases are left out: a gate stops contact for them anyway.</p>
+              </div>
+              <table class="data-table clickable" id="holdout-table"></table>
+            </div>
+
+            <div class="card power-card">
+              <div class="card-head">
+                <h2>Is the pilot big enough? <span class="sim-pill">Simulated</span></h2>
+              </div>
+              <p class="power-text">To detect a 4pp lift over a 14.5% baseline with 95% confidence and 80% power, the holdout needs about 1,230 cases. At ~400 failed checkouts a day and a 10% holdout, that takes about 31 days. Before that, Outcomes shows assumptions, not results.</p>
+            </div>
+          </section>
+        </div>
+      </main>
+
+      <aside class="detail" id="detail" aria-hidden="true">
+        <div class="detail-head">
+          <div>
+            <div class="detail-id" id="detail-id"></div>
+            <div class="muted" id="detail-sub"></div>
+          </div>
+          <button class="btn" id="detail-close" type="button">Close</button>
+        </div>
+        <div class="detail-body" id="detail-body"></div>
+      </aside>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

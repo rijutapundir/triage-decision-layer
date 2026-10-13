@@ -1,0 +1,3 @@
+
+{"feedKPI":"4032 contacted, 3 held, 5 blocked","holdoutTreated":null,"feed":["CHK-4139 feed=Payment linkHoldout ₹9.80","CHK-4126 feed=Payment linkHoldout ₹9.80","CHK-4134 feed=Voice call + linkHoldout ₹27.50","CHK-4125 feed=Voice call + linkExplore ₹23.00","CHK-4121 feed=No contactExplore ₹0.00","CHK-4118 feed=Voice call + linkHoldout ₹27.50","CHK-4129 feed=Payment linkExplore ₹9.80","CHK-4109 feed=Payment linkExplore ₹9.80","CHK-4106 feed=Payment linkHoldout ₹9.80","CHK-4114 feed=Payment linkExplore ₹9.80","CHK-4131 feed=Payment linkHoldout ₹9.80","CHK-4127 feed=Voice call + linkExplore ₹23.00"],"holdout":[]}
+

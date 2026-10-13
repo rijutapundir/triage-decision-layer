@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-12",
+  "url": "https://triage-decision-layer.netlify.app/",
+  "healthScore": 92,
+  "issues": [
+    {"id": "ISSUE-001", "title": "Decision feed counts and charges holdout cases as contacted; Holdout view says no contact", "severity": "high", "category": "functional"},
+    {"id": "ISSUE-002", "title": "At 375px the sidebar stays open and clips content", "severity": "high", "category": "visual"},
+    {"id": "ISSUE-003", "title": "Free shipping subsidy charged per contacted case, discount only on recovery", "severity": "medium", "category": "functional"},
+    {"id": "ISSUE-004", "title": "In-app navigation never changes the URL", "severity": "low", "category": "ux"},
+    {"id": "ISSUE-005", "title": "Holdout/Explore labelled 10% but are 6 of 35", "severity": "low", "category": "content"},
+    {"id": "ISSUE-006", "title": "No-contact action has four names; Rs vs rupee sign", "severity": "low", "category": "content"},
+    {"id": "ISSUE-007", "title": "'took the cheaper rung' when costs are equal", "severity": "low", "category": "content"},
+    {"id": "ISSUE-008", "title": "'Not allowed' shown without reason in case detail", "severity": "low", "category": "ux"}
+  ],
+  "categoryScores": {"console": 100, "links": 100, "visual": 85, "functional": 77, "ux": 94, "performance": null, "content": 91, "accessibility": 100}
+}

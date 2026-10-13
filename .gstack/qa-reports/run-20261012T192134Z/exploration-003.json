@@ -1,0 +1,6 @@
+{
+  "observationCommand": "bun \"$HOME/.claude/skills/gstack/bin/gstack-qa-deadline\" run deadline.json -- \"$B\" goto https://triage-decision-layer.netlify.app/",
+  "observed": "Navigated to https://triage-decision-layer.netlify.app/ (200)\n",
+  "hypothesis": "Daemon now persists (status URL is the target). Read page text for KPIs, holdout rows and labels (R1, R6, C1).",
+  "nextCommand": "bun \"$HOME/.claude/skills/gstack/bin/gstack-qa-deadline\" run deadline.json -- \"$B\" text"
+}

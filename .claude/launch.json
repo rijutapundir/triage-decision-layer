@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "triage", "runtimeExecutable": "node", "runtimeArgs": ["C:/Users/rijut/AppData/Local/Temp/claude/C--Users-rijut-triage/75d99856-25e7-4140-94cb-53b368e6b100/scratchpad/serve.js"], "port": 8765 }
+  ]
+}

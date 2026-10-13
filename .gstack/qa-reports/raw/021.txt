@@ -1,0 +1,3 @@
+
+{"iw":375,"sw":375,"sidebarVisible":true,"sidebarW":240,"over":["DIV.topbar-right:545","SPAN.badge:501","SPAN.avatar:545","DIV.card stat:484","DIV.k:459","DIV.v:459","DIV.stat-sub:459","DIV.card stat:484"]}
+

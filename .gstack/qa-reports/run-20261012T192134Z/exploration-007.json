@@ -1,0 +1,6 @@
+{
+  "observationCommand": "bun \"$HOME/.claude/skills/gstack/bin/gstack-qa-deadline\" run deadline.json -- \"$B\" js \"JSON.stringify({res:performance.getEntriesByType('resource').map(r=>[r.initiatorType,r.name,Math.round(r.duration)]), nav:performance.getEntriesByType('navigation').map(n=>[n.responseStatus,Math.round(n.responseEnd),Math.round(n.domContentLoadedEventEnd),Math.round(n.loadEventEnd)]), ls:localStorage.length, ss:sessionStorage.length, cookies:document.cookie.length, sw:!!navigator.serviceWorker.controller})\"",
+  "observed": "{\"res\":[[\"link\",\"https://triage-decision-layer.netlify.app/style.css\",321],[\"script\",\"https://triage-decision-layer.netlify.app/data.js\",323],[\"script\",\"https://triage-decision-layer.netlify.app/engine.js\",409],[\"script\",\"https://triage-decision-layer.netlify.app/app.js\",409]],\"nav\":[[200,1020,1497,1497]],\"ls\":0,\"ss\":0,\"cookies\":0,\"sw\":false}\n",
+  "hypothesis": "Only 4 static GETs after view switches, no storage, no cookies, no service worker: client-only, approved mutation gate is open. Next check mobile layout (R2): set 375x812 viewport.",
+  "nextCommand": "bun \"$HOME/.claude/skills/gstack/bin/gstack-qa-deadline\" run deadline.json -- \"$B\" viewport 375x812"
+}
