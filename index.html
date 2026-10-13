@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Triage</title>
   <link rel="stylesheet" href="style.css">
+  <script>try { if (localStorage.getItem('triage.guideDismissed') === '1') document.documentElement.classList.add('guide-off'); } catch (e) {}</script>
 </head>
 <body>
   <div class="shell">
@@ -32,17 +33,37 @@
 
           <div class="nav-section">Measurement</div>
           <a class="nav-item" href="#proof" data-view="proof">
-            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 16h14"/><path d="m4 12 4-4 3 3 5-6"/></svg>Proof</a>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 16h14"/><path d="m4 12 4-4 3 3 5-6"/></svg>Default vs Triage</a>
           <a class="nav-item" href="#outcomes" data-view="outcomes">
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 16h14M5 13V9M10 13V5M15 13V7"/></svg>Outcomes</a>
           <a class="nav-item" href="#holdout" data-view="holdout">
             <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M10 3v14"/></svg>Holdout</a>
+
+          <div class="nav-about">
+            <div class="nav-section">About this prototype</div>
+            <a class="nav-item" href="#evaluators" data-view="evaluators">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M10 9v5M10 6.5v.01"/></svg>For evaluators</a>
+          </div>
         </nav>
+        <div class="sidebar-foot"><button type="button" class="link" id="show-guide">Show guide</button></div>
       </aside>
 
       <main class="main">
         <div class="content">
           <section class="view" id="view-feed">
+            <div class="card guide" id="guide">
+              <button type="button" class="guide-x" id="guide-close" aria-label="Dismiss the guide">×</button>
+              <h2>New here? Five clicks, two minutes.</h2>
+              <ol>
+                <li><a href="#feed" data-case="CHK-4100">Open the ₹680 UPI case: see why a payment link beats a call.</a></li>
+                <li><a href="#feed" data-case="CHK-4140">Open the ₹499 case: see why doing nothing wins.</a></li>
+                <li><a href="#policy">Policy: switch off discounts, then approve, and watch decisions change.</a></li>
+                <li><a href="#proof">Default vs Triage: see why Triage hasn't taken over this store yet.</a></li>
+                <li><a href="#feed" data-outage>Simulate HDFC outage: outreach stops.</a></li>
+              </ol>
+              <p class="guide-foot">Why one default isn't enough → <a href="#evaluators">For evaluators</a></p>
+            </div>
+
             <div class="card hero">
               <div class="hero-kicker">A decision layer between a failed checkout and Agent Studio's cart recovery agent</div>
               <p class="hero-line">Triage starts every merchant on the best default rule, and takes over only where a holdout proves it earns more.</p>
@@ -116,7 +137,25 @@
           <section class="view" id="view-proof" hidden>
             <div class="page-head">
               <div>
-                <h1>Proof: no single default fits every merchant</h1>
+                <h1>Default vs Triage</h1>
+                <p class="muted">Your store's holdout, week by week.</p>
+              </div>
+              <span class="sim-pill">Simulated</span>
+            </div>
+
+            <div class="card callout mode-callout">
+              <strong>Running: best default.</strong> Triage is ~8% ahead in your holdout but not yet proven, so the default keeps running.
+              Triage takes over only when your holdout proves it earns more.
+            </div>
+
+            <div id="handover"></div>
+          </section>
+
+          <section class="view" id="view-evaluators" hidden>
+            <div class="page-head">
+              <div>
+                <h1>For evaluators: why one default isn't enough</h1>
+                <p class="muted">Simulated across four merchant types. Merchants never see other merchants' data.</p>
                 <p class="muted proof-method">Triage's decisions are made with noisy lift estimates (early: high noise, 10% explore; mature: lower noise, 5% explore) and scored against each merchant's true response.</p>
               </div>
               <span class="sim-pill">Simulated</span>
@@ -140,7 +179,7 @@
               <div class="table-scroll"><table class="data-table proof-table" id="rules-table"></table></div>
             </div>
 
-            <div id="handover"></div>
+            <div id="handover-others"></div>
           </section>
 
           <section class="view" id="view-outcomes" hidden>

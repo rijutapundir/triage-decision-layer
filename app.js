@@ -784,20 +784,10 @@
   }
 
   function renderHero() {
-    const foot = document.getElementById('hero-foot');
-    if (!proof) { foot.innerHTML = '<span class="muted">Running the proof simulation…</span>'; return; }
-    const range = k => { const v = proof.merchants.map(m => m[k]); return Math.min(...v) + '–' + Math.max(...v) + '%'; };
-    const proven = proof.merchants.filter(m => m.triageShipped);
-    foot.innerHTML =
-      '<span class="mode-chip">Every merchant starts on the best default</span>' +
-      '<span class="mode-chip mode-on">Triage proven at ' + proven.length + ' of ' + proof.merchants.length +
-        ' merchant types by week ' + proof.provenBy + '</span>' +
-      '<span>In simulation the default reaches <strong>' + range('defaultPct') + '</strong> of each merchant type\'s best fixed rule; ' +
-        'with Triage only where proven (' + esc(proven.map(m => shortName(m.name)).join(', ')) + '), <strong>' + range('shippedPct') + '</strong>.</span>' +
-      '<a href="#proof">See the proof →</a>';
-    const k = handover && handover.merchants.find(m => m.name === KAARA);
-    if (k) foot.insertAdjacentHTML('beforeend', '<span class="hero-mode">' +
-      esc(approved.merchantName + ', simulated as home decor. ' + status(k).text) + '</span>');
+    // The merchant's own view: its mode only, never other merchants' numbers.
+    document.getElementById('hero-foot').innerHTML =
+      '<span class="mode-chip">Running: best default · Triage ahead but not yet proven for your store</span>' +
+      '<a href="#proof">See Default vs Triage →</a>';
   }
 
   /* ---------- Handover timeline ----------
@@ -835,21 +825,21 @@
       '</svg>';
   }
 
-  function renderHandover() {
-    const el = document.getElementById('handover');
+  function renderHandover(elId, list, single) {
+    const el = document.getElementById(elId);
     if (!handover) { el.innerHTML = ''; return; }
     el.innerHTML =
-      '<div class="card proof-card">' +
+      '<div class="card proof-card' + (single ? ' hv-single' : '') + '">' +
         '<div class="card-head"><h2>Handover: the default runs until a holdout proves Triage ahead</h2>' +
           '<p class="muted">Net margin per week as % of each merchant\'s best fixed rule. ' +
           '<span class="hv-key hv-key-triage"></span>Triage <span class="hv-key hv-key-default"></span>Default ' +
           '<span class="hv-key hv-key-on"></span>Triage running</p></div>' +
-        '<div class="hv-grid-wrap">' + handover.merchants.map(m => {
+        '<div class="hv-grid-wrap">' + list.map(m => {
           const st = status(m);
           return '<div class="hv-cell"><div class="hv-name">' + esc(shortName(m.name)) + '</div>' + miniChart(m) +
             '<p class="hv-status st-' + st.cls + '">' + esc(st.text) + '</p></div>';
         }).join('') + '</div>' +
-        '<p class="table-foot">Same merchants, checkouts and true response as the table above. Triage\'s lift estimates get less noisy each week ' +
+        '<p class="table-foot">' + (single ? 'Simulated for a home decor store like yours. ' : 'Same merchants, checkouts and true response as the table above. ') + 'Triage\'s lift estimates get less noisy each week ' +
           '(sd 0.35 in week 1 to 0.15 in week ' + handover.weeks + ') and explore falls from 10% to 5%. Each week ' +
           handover.perWeek.toLocaleString('en-IN') + ' failed checkouts are split half to Triage, half to the default. ' +
           'Triage takes over when the lower 95% bound of its advantage, pooled over the weeks so far, clears zero. ' +
@@ -858,11 +848,15 @@
       '</div>';
   }
 
+  const renderKaara  = () => renderHandover('handover', handover ? handover.merchants.filter(m => m.name === KAARA) : [], true);
+  const renderOthers = () => renderHandover('handover-others', handover ? handover.merchants.filter(m => m.name !== KAARA) : [], false);
+
   function proofReady(msg) {
     if (msg.kind === 'proof') proof = msg.result;
     if (msg.kind === 'handover') handover = msg.result;
     renderHero();
-    if (viewFromHash() === 'proof') { renderProof(); renderHandover(); }
+    if (viewFromHash() === 'proof') renderKaara();
+    if (viewFromHash() === 'evaluators') { renderProof(); renderOthers(); }
   }
 
   function startProof() {
@@ -888,9 +882,38 @@
   }
 
   /* =========================================================================
+     START HERE GUIDE
+     Dismissal is remembered in localStorage when available; the head script
+     applies it before first paint, so the feed never shifts.
+     ========================================================================= */
+  const GUIDE_KEY = 'triage.guideDismissed';
+  const setGuide = off => {
+    document.documentElement.classList.toggle('guide-off', off);
+    try { off ? localStorage.setItem(GUIDE_KEY, '1') : localStorage.removeItem(GUIDE_KEY); } catch (e) {}
+  };
+  document.getElementById('guide-close').addEventListener('click', () => setGuide(true));
+  document.getElementById('show-guide').addEventListener('click', () => {
+    setGuide(false);
+    if (location.hash !== '#feed') location.hash = '#feed';
+    document.querySelector('.content').scrollTop = 0;
+  });
+  document.getElementById('guide').addEventListener('click', e => {
+    const a = e.target.closest('a');
+    if (!a || (!a.dataset.case && !a.hasAttribute('data-outage'))) return;   // plain links just navigate
+    e.preventDefault();
+    const onFeed = location.hash === '#feed' || location.hash === '';
+    if (!onFeed) location.hash = '#feed';
+    setTimeout(() => {
+      if (a.dataset.case) openCase(a.dataset.case);
+      else if (!context.systemicFailure) document.getElementById('outage').click();
+    }, onFeed ? 0 : 60);
+  });
+
+  /* =========================================================================
      NAVIGATION
      ========================================================================= */
-  const VIEWS = { feed: 'Decision feed', policy: 'Policy', audit: 'Audit log', proof: 'Proof', outcomes: 'Outcomes', holdout: 'Holdout' };
+  const VIEWS = { feed: 'Decision feed', policy: 'Policy', audit: 'Audit log', proof: 'Default vs Triage', outcomes: 'Outcomes',
+                  holdout: 'Holdout', evaluators: 'For evaluators' };
   const viewFromHash = () => {
     const v = location.hash.replace(/^#/, '');
     return VIEWS[v] ? v : 'feed';
@@ -906,7 +929,8 @@
     close();
     if (view === 'policy') renderPolicy();
     if (view === 'audit') renderAudit();
-    if (view === 'proof') { renderProof(); renderHandover(); }
+    if (view === 'proof') renderKaara();
+    if (view === 'evaluators') { renderProof(); renderOthers(); }
     if (view === 'outcomes') renderOutcomes();
     if (view === 'holdout') renderHoldout();
     document.querySelector('.content').scrollTop = 0;

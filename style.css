@@ -607,3 +607,33 @@ table.scores { width: 100%; border-collapse: collapse; font-variant-numeric: tab
 #audit-table td { white-space: nowrap; }
 .proof-note:empty { display: none; }
 .proof-note { margin: 0; padding: var(--s3) var(--s6); font-size: 13px; color: var(--amber-text); border-top: 1px solid var(--line-soft); }
+
+/* ---------- Merchant vs evaluator split, Start here guide ---------- */
+@media (min-width: 768px) {
+  .sidebar { display: flex; flex-direction: column; }
+  .sidebar nav { flex: 1; }
+  .nav-about { margin-top: auto; padding-top: var(--s4); }
+}
+.nav-about .nav-section { font-size: 10px; }
+.sidebar-foot { padding: var(--s3) var(--s4) 0; }
+.sidebar-foot .link { font: inherit; font-size: 12px; color: var(--muted); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
+.sidebar-foot .link:hover { color: var(--blue); }
+@media (max-width: 767px) {
+  .sidebar { display: flex; align-items: center; }
+  .nav-about { display: contents; }
+  .sidebar-foot { padding: 0 var(--s3); flex-shrink: 0; white-space: nowrap; }
+}
+
+.guide { position: relative; padding: var(--s3) var(--s6) var(--s3) var(--s4); margin-bottom: var(--s4); font-size: 13px; }
+.guide h2 { font-size: 14px; font-weight: 700; margin: 0 0 var(--s2); }
+.guide ol { margin: 0; padding-left: 20px; display: grid; gap: 2px; }
+.guide a { color: var(--blue); text-decoration: none; }
+.guide a:hover { text-decoration: underline; }
+.guide-foot { margin: var(--s2) 0 0; color: var(--muted); }
+.guide-x { position: absolute; top: 6px; right: 8px; width: 28px; height: 28px; font-size: 18px; line-height: 1; color: var(--muted);
+  background: none; border: 0; border-radius: var(--r-sm); cursor: pointer; }
+.guide-x:hover { background: var(--line-soft); color: var(--heading); }
+.guide-off .guide { display: none; }
+
+.mode-callout { padding: var(--s3) var(--s4); margin-bottom: var(--s6); }
+.hv-single { max-width: 560px; }
