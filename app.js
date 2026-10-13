@@ -882,6 +882,60 @@
   }
 
   /* =========================================================================
+     LEARNING, LIVE
+     learn.js in its own worker. Each click simulates one week for Kaara and
+     returns the posterior state; nothing here touches the feed's engine.
+     ========================================================================= */
+  const learnBtn = document.getElementById('learn-step');
+  let learnWorker = null, learnWidth0 = null;
+  const pp = n => minus1(n);
+
+  function renderLearn(s) {
+    if (s.week === 0) learnWidth0 = s.pairs.map(p => p.widthPp);
+    document.getElementById('learn-week').textContent = s.week ? '· week ' + s.week : '· before any data';
+    document.getElementById('learn-table').innerHTML =
+      '<thead><tr><th>Cause × action</th><th class="num">Estimated lift</th><th class="num">90% interval</th>' +
+      '<th class="num">Interval width</th><th class="num">Observed</th></tr></thead><tbody>' +
+      s.pairs.map((p, i) => '<tr><td>' + esc(p.label) + '</td>' +
+        '<td class="num">' + pp(p.liftPp) + ' pp</td>' +
+        '<td class="num">' + pp(p.loPp) + ' to ' + pp(p.hiPp) + '</td>' +
+        '<td class="num">±' + (p.widthPp / 2).toFixed(1) +
+          (s.week && learnWidth0 ? ' <span class="narrow">(' + minus1(p.widthPp / 2 - learnWidth0[i] / 2) + ')</span>' : '') + '</td>' +
+        '<td class="num">' + p.n.toLocaleString('en-IN') + '</td></tr>').join('') + '</tbody>';
+    const ch = document.getElementById('learn-changes');
+    const wasOpen = ch.open;
+    ch.innerHTML = '<summary>Decisions that would change with this week\'s estimates: <strong>' + s.changes.length + '</strong>' +
+      ' <span class="muted">of ' + s.casesChecked + ' feed cases</span></summary>' +
+      (s.changes.length
+        ? '<ul>' + s.changes.map(c => '<li><span class="cid">' + esc(c.id) + '</span> ' + esc(c.from) + ' → <strong>' + esc(c.to) +
+            '</strong><div class="muted">' + esc(c.reason) + '</div></li>').join('') + '</ul>'
+        : '<p class="muted">None yet: with no data the estimates equal the built-in assumptions.</p>');
+    ch.open = wasOpen;
+    const v = s.vsDefault;
+    document.getElementById('learn-margin').innerHTML =
+      (v ? '<div><strong>Triage vs default:</strong> ' + (v.perCheckout < 0 ? '−' : '+') + '₹' + Math.abs(v.perCheckout).toFixed(1) +
+            ' net margin per checkout (' + (v.pct < 0 ? '' : '+') + minus1(v.pct) + '%), lower bound ' +
+            (v.lo < 0 ? '−' : '+') + '₹' + Math.abs(v.lo).toFixed(1) +
+            ' <span class="mode-chip ' + (v.lo > 0 ? 'mode-on">Proven: Triage would take over' : '">Not proven: the default keeps running') + '</span>' +
+            '<div class="muted">' + v.n.toLocaleString('en-IN') + ' Triage and default checkouts so far.</div></div>'
+         : '<div class="muted">Triage vs default appears after the first simulated week.</div>') +
+      '<p>Triage takes over when the lower bound clears zero.</p>';
+    learnBtn.disabled = false;
+  }
+
+  function startLearn() {
+    if (learnWorker) return;
+    try {
+      learnWorker = new Worker('learn-worker.js');
+      learnWorker.onmessage = e => renderLearn(e.data);
+      learnWorker.onerror = e => { e.preventDefault();
+        document.getElementById('learn-margin').innerHTML = '<p class="muted">Live learning needs Web Workers; open the deployed site.</p>'; };
+    } catch (err) { learnWorker = null; }
+  }
+  learnBtn.addEventListener('click', () => { if (!learnWorker) return; learnBtn.disabled = true; learnWorker.postMessage('step'); });
+  document.getElementById('learn-reset').addEventListener('click', () => { if (!learnWorker) return; learnBtn.disabled = true; learnWorker.postMessage('reset'); });
+
+  /* =========================================================================
      START HERE GUIDE
      Dismissal is remembered in localStorage when available; the head script
      applies it before first paint, so the feed never shifts.
@@ -929,7 +983,7 @@
     close();
     if (view === 'policy') renderPolicy();
     if (view === 'audit') renderAudit();
-    if (view === 'proof') renderKaara();
+    if (view === 'proof') { renderKaara(); startLearn(); }
     if (view === 'evaluators') { renderProof(); renderOthers(); }
     if (view === 'outcomes') renderOutcomes();
     if (view === 'holdout') renderHoldout();

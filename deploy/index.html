@@ -149,6 +149,24 @@
             </div>
 
             <div id="handover"></div>
+
+            <div class="card proof-card learn-card">
+              <div class="card-head learn-head">
+                <h2>Learning, live <span class="muted" id="learn-week"></span></h2>
+                <div class="learn-actions">
+                  <button type="button" class="btn btn-primary" id="learn-step" disabled>Simulate next week (Kaara, ~2,000 checkouts)</button>
+                  <button type="button" class="link" id="learn-reset">Reset</button>
+                </div>
+              </div>
+              <p class="muted learn-intro">Each click draws one week of outcomes from a home decor store's simulated true response (fixed seed).
+                Triage updates what it believes each action adds, starting from its built-in assumptions as a weak prior.
+                Holdout checkouts teach the no-contact rate; explore, Triage and default checkouts teach each action's rate.</p>
+              <div class="table-scroll"><table class="data-table learn-table" id="learn-table"></table></div>
+              <details class="learn-changes" id="learn-changes"></details>
+              <div class="learn-margin" id="learn-margin"></div>
+              <p class="table-foot">Learned estimates live only in this panel: the decision feed and its four note cases keep the built-in assumptions.
+                Each week splits checkouts 10% holdout, 10% explore, 40% Triage, 40% default; the margin comparison uses realised outcomes only.</p>
+            </div>
           </section>
 
           <section class="view" id="view-evaluators" hidden>

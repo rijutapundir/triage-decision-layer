@@ -637,3 +637,18 @@ table.scores { width: 100%; border-collapse: collapse; font-variant-numeric: tab
 
 .mode-callout { padding: var(--s3) var(--s4); margin-bottom: var(--s6); }
 .hv-single { max-width: 560px; }
+
+/* ---------- Learning, live ---------- */
+.learn-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s3); }
+.learn-actions { display: flex; align-items: center; gap: var(--s4); }
+.learn-actions .link { font: inherit; font-size: 13px; color: var(--blue); background: none; border: 0; padding: 0; cursor: pointer; }
+.learn-intro { margin: var(--s2) var(--s6) 0; font-size: 13px; }
+.learn-table td, .learn-table th { padding-left: var(--s4); padding-right: var(--s4); white-space: nowrap; }
+.learn-table .narrow { color: var(--green-text); font-size: 12px; }
+.learn-changes { margin: 0; padding: var(--s3) var(--s6); border-top: 1px solid var(--line-soft); font-size: 13px; }
+.learn-changes summary { cursor: pointer; }
+.learn-changes ul { margin: var(--s2) 0 0; padding-left: 18px; display: grid; gap: var(--s2); }
+.learn-changes .cid { font-weight: 600; color: var(--heading); }
+.learn-margin { padding: var(--s3) var(--s6); border-top: 1px solid var(--line-soft); font-size: 13px; }
+.learn-margin p { margin: var(--s2) 0 0; font-weight: 600; color: var(--heading); }
+.learn-margin .mode-chip { margin-left: var(--s2); }

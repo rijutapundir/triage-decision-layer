@@ -200,7 +200,15 @@ function makeSim(E) {
     return { perWeek: o.perWeek, weeks: o.weeks, merchants: result };
   }
 
-  return { proof, handover };
+  /* One merchant's checkouts and true response, exactly as the proof and the
+     handover see them. Read-only accessor for the live learning panel. */
+  function truthFor(name) {
+    const setups = {};
+    run(0.4, 0.15, 0.05, setups);
+    return setups[name];
+  }
+
+  return { proof, handover, truthFor };
 }
 
 /* As shipped: the better of the default and mature Triage, but Triage only

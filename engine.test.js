@@ -173,6 +173,16 @@ if (typeof require !== 'undefined') {
           w.running === 'default' || (m.takeoverWeek && w.week >= m.takeoverWeek)) &&
           (!m.takeoverWeek || m.weeks[m.takeoverWeek - 1].diffLoPct > 0)));
 
+  // 13. Live learning: after 8 simulated weeks every shown interval is narrower than at week 0.
+  const learner = require('./learn.js').createLearner(
+    { ...engine, ...require('./data.js') },
+    simjs.makeSim({ ...engine, MERCHANT_POLICY }).truthFor('Home decor (Kaara-like)'));
+  const w0 = learner.state().pairs.map(p => p.widthPp);
+  let wk; for (let i = 0; i < 8; i++) wk = learner.step();
+  check('Live learning: after 8 weeks every shown interval is narrower than at week 0',
+        wk.week === 8 && wk.pairs.length === 6 && wk.pairs.every((p, i) => p.widthPp < w0[i]),
+        wk.pairs.map((p, i) => p.label + ' ' + w0[i].toFixed(1) + '->' + p.widthPp.toFixed(1)).join(', '));
+
   check('Simulations leave the engine\'s lift table as they found it',
         JSON.stringify(engine.LIFT_TABLE) === JSON.stringify(LIFT_TABLE_AT_START));
 }
