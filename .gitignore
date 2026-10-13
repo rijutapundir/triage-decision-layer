@@ -1,0 +1,11 @@
+# Local reference material: confidential or private, never published
+Ref1_Razorpay_Brief.txt
+Ref2_PM_Call_Transcript.txt
+Ref3_BTC_Handbook_Excerpt.txt
+Ref*.txt
+
+# Local tooling
+.claude/
+.gstack/browse-*
+.gstack/tmp/
+node_modules/
