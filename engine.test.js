@@ -132,12 +132,14 @@ check('The product note\'s four cases are treated and decided as the note says',
 //     Last, because both simulations rewrite LIFT_TABLE while they run (and restore it).
 if (typeof require !== 'undefined') {
   const engine = require('./engine.js');
-  const proof  = require('./sim.js').runProof({ ...engine, MERCHANT_POLICY });
+  const simjs  = require('./sim.js');
+  const proof  = simjs.runProof({ ...engine, MERCHANT_POLICY });
+  simjs.shipAsProven(proof, simjs.runHandover({ ...engine, MERCHANT_POLICY }));
   const NOTE_PROOF = {               // rows of the note's PROOF table, in column order
     defaultPct: [100, 100,  75,  99],
     earlyPct:   [115,  86,  94,  99],
     maturePct:  [123,  98, 104, 108],
-    shippedPct: [123, 100, 104, 108]
+    shippedPct: [123, 100, 104,  99]  // Triage only where its holdout proved it by week 8
   };
   const got = k => proof.merchants.map(m => m[k]);
   check('Proof simulation reproduces the note\'s PROOF table',

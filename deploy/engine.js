@@ -293,7 +293,7 @@ function decide(c, policy, context) {
 
   let reason;
   if (refusedDiscount) {
-    reason = 'Discount scored higher but did not clear the margin hurdle; took ' +
+    reason = CAUSE_LABEL[cause] + '. Discount scored higher but did not clear the margin hurdle; took ' +
              winner.label.toLowerCase() + ' instead.';
   } else if (isCloseCall) {
     reason = CAUSE_LABEL[cause] + '. ' + equivalence(winner, alternative);

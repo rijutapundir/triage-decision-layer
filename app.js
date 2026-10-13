@@ -22,6 +22,7 @@
   const inr2 = n => '₹' + n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const signed = n => (n < 0 ? '−' : '') + inr2(Math.abs(n));
   const pct = n => (n * 100).toFixed(1) + ' pp';
+  const minus1 = n => (n < 0 ? '−' : '') + Math.abs(n).toFixed(1);   // "−4.1", never "-4.1"
 
   function esc(s) {
     return String(s).replace(/[&<>"']/g, ch =>
@@ -158,7 +159,7 @@
       } else if (arm === 'explore') {
         actionText = taken.label + ' (explore)';
         pickLine = 'Engine pick: ' + d.chosen.label;
-      } else if (arm === 'override') {
+      } else if (arm === 'override' && taken.action !== d.chosen.action) {
         actionText = taken.label + ' (your override)';
         pickLine = 'Engine pick: ' + d.chosen.label;
       } else if (arm === 'paused') {
@@ -276,7 +277,7 @@
           : arm === 'explore'
           ? '<div class="arm-note"><strong>Explore.</strong> This case gets ' + esc(taken.label.toLowerCase()) +
             ' at random (' + inr2(ACTION_COSTS[taken.action]) + ' cash), so per-action lift can be estimated.</div>'
-          : arm === 'override'
+          : arm === 'override' && taken.action !== d.chosen.action
           ? '<div class="arm-note"><strong>Your override.</strong> This case gets ' + esc(taken.label.toLowerCase()) +
             '. It leaves the holdout measurement: overrides can teach diagnosis, never lift.</div>'
           : arm === 'paused'
@@ -304,8 +305,12 @@
       return '<h3>Your call</h3><p class="note">A gate stopped contact for this customer, so it cannot be overridden.</p>';
     }
     const cur = overrides[c.id] || '';
-    const opts = '<option value="">Triage\'s decision: ' + esc(d.chosen.label) + '</option>' +
-      d.scored.filter(s => s.allowed && s.action !== d.chosen.action).map(s =>
+    const offered = d.scored.filter(s => s.allowed && s.action !== d.chosen.action);
+    // The override in force is always shown and selected, even when Triage now picks the same action.
+    const inForce = cur && !offered.some(s => s.action === cur)
+      ? '<option value="' + cur + '" selected>' + esc(ACTION_LABEL[cur]) + ' (your override, same as Triage)</option>' : '';
+    const opts = '<option value=""' + (cur ? '' : ' selected') + '>Triage\'s decision: ' + esc(d.chosen.label) + '</option>' + inForce +
+      offered.map(s =>
         '<option value="' + s.action + '"' + (cur === s.action ? ' selected' : '') + '>' + esc(s.label) + '</option>').join('');
     return '<h3>Your call</h3>' +
       '<label class="override"><span>Override this decision</span><select id="override" data-case="' + esc(c.id) + '">' + opts + '</select></label>' +
@@ -561,6 +566,14 @@
     const off = approved.allowedActions.filter(a => !draft.allowedActions.includes(a)).map(a => ACTION_LABEL[a] + ' off');
     logEvent('Merchant', 'Approved policy: ' + (on.concat(off, changes).join(', ') || 'no changes'));
     approved = clone(draft);
+    // Nothing outside the approved policy ever runs, overrides included.
+    Object.keys(overrides).forEach(id => {
+      const c = CASES.find(x => x.id === id);
+      if (overrides[id] !== 'hold' && !isAllowed(overrides[id], c, approved)) {
+        logEvent('Triage', 'Override cleared: ' + ACTION_LABEL[overrides[id]] + ' no longer allowed by policy (' + id + ')');
+        delete overrides[id];
+      }
+    });
     renderFeed();
     renderImpact();
   });
@@ -669,6 +682,7 @@
     const eligible = runAll(p).filter(({ d }) => !d.blocked);
     const inArm = a => eligible.filter(r => r.arm === a);
     const holdout = inArm('holdout'), explore = inArm('explore'), treated = inArm('treated');
+    const overridden = inArm('override'), paused = inArm('paused');
 
     // Price of measuring: the net value Triage expected from its choice, given up on holdout cases.
     const price = holdout.reduce((t, { d }) => t + d.chosen.netValue, 0);
@@ -676,7 +690,10 @@
     const ofToday = (n, target) => n + ' of ' + eligible.length + ' today (target ' + share(target) + '; small samples vary)';
 
     document.getElementById('holdout-stats').innerHTML = [
-      ['Treated', treated.length, 'Of ' + eligible.length + ' eligible cases today, acted on as chosen'],
+      ['Treated', treated.length + overridden.length,
+        'Of ' + eligible.length + ' eligible cases today: ' + treated.length + ' acted on as chosen' +
+        (overridden.length ? ', ' + overridden.length + ' treated (override)' : '') +
+        (paused.length ? '. ' + paused.length + ' held while paused' : '')],
       ['Holdout · target ' + share(p.holdoutShare), holdout.length, ofToday(holdout.length, p.holdoutShare) + '. No contact.'],
       ['Explore · target ' + share(p.exploreShare), explore.length, ofToday(explore.length, p.exploreShare) + '. A random allowed action.'],
       ['Price of measuring', inr(price), 'Expected value given up today to keep the measurement honest', true]
@@ -725,7 +742,7 @@
     ['defaultPct', 'Best single default: link to all, call above ₹1,500'],
     ['earlyPct',   'Triage alone, first weeks, 10% explore'],
     ['maturePct',  'Triage alone, estimates mature, 5% explore'],
-    ['shippedPct', 'As shipped: Triage only where it wins', 'shipped']
+    ['shippedPct', 'As shipped: Triage only where its holdout proved it', 'shipped']
   ];
   const shortName = n => n.replace(' (Kaara-like)', ', Kaara-like');
   const pctCell = (v, extra) => '<td class="num' + (v < 90 ? ' amber' : '') + (extra || '') + '">' + v + '%</td>';
@@ -749,8 +766,13 @@
       '2,000 synthetic checkouts per merchant (seed 7), each merchant with its own true response: lifts vary by merchant (sd 0.4). ' +
       '100% = the best of six fixed rules for that merchant, picked in hindsight; over 100% = more net margin than that rule; amber = below 90%. ' +
       'Triage gets no thresholds and pays for noise and exploring. Net margin excludes the notional fatigue cost. ' +
-      'As shipped: Triage where it beats the default (' + ms.filter(m => m.triageWins).map(m => shortName(m.name)).join('; ') +
+      'As shipped: Triage where its holdout proved it ahead by week ' + proof.provenBy + ' (' +
+      ms.filter(m => m.triageShipped).map(m => shortName(m.name)).join('; ') +
       '), the default elsewhere. Computed in your browser in ' + (proof.ms / 1000).toFixed(1) + 's.';
+    const unproven = ms.filter(m => !m.triageShipped && m.triageWins);
+    document.getElementById('proof-note').textContent = unproven.map(m =>
+      shortName(m.name).replace(', Kaara-like', '') + ' stays on the default: Triage runs ~' + (m.maturePct - m.defaultPct) +
+      '% ahead but its holdout has not proven it by week 16.').join(' ');
 
     document.getElementById('rules-table').innerHTML =
       '<thead><tr><th>Fixed rule</th>' + ms.map(m => '<th class="num">' + esc(shortName(m.name)) + '</th>').join('') + '</tr></thead><tbody>' +
@@ -765,17 +787,17 @@
     const foot = document.getElementById('hero-foot');
     if (!proof) { foot.innerHTML = '<span class="muted">Running the proof simulation…</span>'; return; }
     const range = k => { const v = proof.merchants.map(m => m[k]); return Math.min(...v) + '–' + Math.max(...v) + '%'; };
+    const proven = proof.merchants.filter(m => m.triageShipped);
     foot.innerHTML =
-      '<span>Across four simulated merchant types, the best single default reaches <strong>' + range('defaultPct') +
-      '</strong> of each one\'s best fixed rule. As shipped, Triage reaches <strong>' + range('shippedPct') + '</strong>.</span>' +
+      '<span class="mode-chip">Every merchant starts on the best default</span>' +
+      '<span class="mode-chip mode-on">Triage proven at ' + proven.length + ' of ' + proof.merchants.length +
+        ' merchant types by week ' + proof.provenBy + '</span>' +
+      '<span>In simulation the default reaches <strong>' + range('defaultPct') + '</strong> of each merchant type\'s best fixed rule; ' +
+        'with Triage only where proven (' + esc(proven.map(m => shortName(m.name)).join(', ')) + '), <strong>' + range('shippedPct') + '</strong>.</span>' +
       '<a href="#proof">See the proof →</a>';
     const k = handover && handover.merchants.find(m => m.name === KAARA);
-    if (k) {
-      const st = status(k);
-      foot.insertAdjacentHTML('afterbegin', '<span class="mode-chip mode-' + st.cls + '">' +
-        (k.takeoverWeek ? 'Running: Triage' : 'Running: best default') + '</span>');
-      foot.insertAdjacentHTML('beforeend', '<span class="hero-mode">' + esc(approved.merchantName + ', simulated as home decor. ' + st.text) + '</span>');
-    }
+    if (k) foot.insertAdjacentHTML('beforeend', '<span class="hero-mode">' +
+      esc(approved.merchantName + ', simulated as home decor. ' + status(k).text) + '</span>');
   }
 
   /* ---------- Handover timeline ----------
@@ -790,7 +812,7 @@
     if (m.provenBehindWeek) return { cls: 'off', text: 'Stays on the default. From week ' + m.provenBehindWeek + ' the holdout shows Triage behind it.' };
     const last = m.weeks[m.weeks.length - 1];
     return { cls: 'wait', text: 'Still on the default at week ' + last.week + ': Triage looks ahead, but the holdout has not proved it (lower bound ' +
-      last.diffLoPct.toFixed(1) + '%).' };
+      minus1(last.diffLoPct) + '%).' };
   }
 
   function miniChart(m) {
@@ -846,7 +868,7 @@
   function startProof() {
     try {
       const w = new Worker('proof-worker.js');
-      w.onmessage = e => { proofReady(e.data); if (e.data.kind === 'handover') w.terminate(); };
+      w.onmessage = e => { proofReady(e.data); if (e.data.kind === 'proof') w.terminate(); };
       w.onerror = e => { e.preventDefault(); w.terminate(); runProofHere(); };
     } catch (err) { runProofHere(); }
   }
@@ -855,8 +877,14 @@
   function runProofHere() {
     const sim = makeSim({ MERCHANT_POLICY, decide, scoreAction, checkGates, isAllowed, LIFT_TABLE, LADDER,
                           diagnose, SHIPPING_SUBSIDY });
-    const timed = (kind, fn) => { const t0 = Date.now(); const r = fn(); r.ms = Date.now() - t0; proofReady({ kind, result: r }); };
-    setTimeout(() => { timed('proof', sim.proof); setTimeout(() => timed('handover', sim.handover), 50); }, 50);
+    setTimeout(() => {
+      const t0 = Date.now();
+      const p = sim.proof(), h = sim.handover();
+      p.ms = h.ms = Date.now() - t0;
+      shipAsProven(p, h);
+      proofReady({ kind: 'handover', result: h });
+      proofReady({ kind: 'proof', result: p });
+    }, 50);
   }
 
   /* =========================================================================

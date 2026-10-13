@@ -601,3 +601,9 @@ table.scores { width: 100%; border-collapse: collapse; font-variant-numeric: tab
 .sim-btn { border-style: dashed; }
 .sim-btn.on { background: #b45309; border-color: #b45309; border-style: solid; }
 @media (max-width: 767px) { .sim-btn { display: none; } .pause-btn { padding: 3px var(--s2); } }
+
+/* Audit log scrolls inside its card on small screens (ISSUE-003) */
+.audit-card { overflow: hidden; }
+#audit-table td { white-space: nowrap; }
+.proof-note:empty { display: none; }
+.proof-note { margin: 0; padding: var(--s3) var(--s6); font-size: 13px; color: var(--amber-text); border-top: 1px solid var(--line-soft); }

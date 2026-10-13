@@ -121,8 +121,6 @@ function makeSim(E) {
       defaultPct: pct(m.def, m.best),
       earlyPct:   pct(e.tri, e.best),
       maturePct:  pct(m.tri, m.best),
-      // As shipped: Triage only where the holdout shows it ahead of the default.
-      shippedPct: Math.max(pct(m.def, m.best), pct(m.tri, m.best)),
       triageWins: m.tri > m.def,
       rulePct: Object.fromEntries(Object.entries(m.rules).map(([r, v]) => [r, pct(v, m.best)]))
     };
@@ -205,7 +203,20 @@ function makeSim(E) {
   return { proof, handover };
 }
 
+/* As shipped: the better of the default and mature Triage, but Triage only
+   where its holdout proved it ahead by the end of the handover window. */
+function shipAsProven(proof, handover) {
+  const byName = Object.fromEntries(handover.merchants.map(h => [h.name, h]));
+  proof.merchants.forEach(m => {
+    const h = byName[m.name];
+    m.triageShipped = !!(h && h.takeoverWeek && h.takeoverWeek <= handover.weeks);
+    m.shippedPct = m.triageShipped ? Math.max(m.defaultPct, m.maturePct) : m.defaultPct;
+  });
+  proof.provenBy = handover.weeks;
+  return proof;
+}
+
 function runProof(E) { return makeSim(E).proof(); }
 function runHandover(E, opt) { return makeSim(E).handover(opt); }
 
-if (typeof module !== 'undefined') module.exports = { makeSim, runProof, runHandover };
+if (typeof module !== 'undefined') module.exports = { makeSim, runProof, runHandover, shipAsProven };
