@@ -5,6 +5,7 @@ const { decide, diagnose, scoreAction, resolveCase, summarizeDay,
         LIFT_TABLE, ACTION_COSTS, SHIPPING_SUBSIDY } = require('./engine.js');
 const { MERCHANT_POLICY, CASES, DEMO_CONTEXT } = require('./data.js');
 
+const LIFT_TABLE_AT_START = JSON.parse(JSON.stringify(LIFT_TABLE));
 let pass = 0, fail = 0;
 function check(name, cond, detail) {
   if (cond) { pass++; console.log('  PASS  ' + name); }
@@ -126,6 +127,39 @@ check('The product note\'s four cases are treated and decided as the note says',
         r.d.chosen.action === NOTE_CASES[r.c.id][0] &&
         r.d.reason.includes(NOTE_CASES[r.c.id][1])),
       noteRows.map(r => r.c.id + ' ' + r.arm + ' ' + r.d.chosen.action + ': ' + r.d.reason).join(' | '));
+
+// 11. sim.js reproduces the product note's PROOF table, and matches the reference script.
+//     Last, because both simulations rewrite LIFT_TABLE while they run (and restore it).
+if (typeof require !== 'undefined') {
+  const engine = require('./engine.js');
+  const proof  = require('./sim.js').runProof({ ...engine, MERCHANT_POLICY });
+  const NOTE_PROOF = {               // rows of the note's PROOF table, in column order
+    defaultPct: [100, 100,  75,  99],
+    earlyPct:   [115,  86,  94,  99],
+    maturePct:  [123,  98, 104, 108],
+    shippedPct: [123, 100, 104, 108]
+  };
+  const got = k => proof.merchants.map(m => m[k]);
+  check('Proof simulation reproduces the note\'s PROOF table',
+        Object.keys(NOTE_PROOF).every(k => JSON.stringify(got(k)) === JSON.stringify(NOTE_PROOF[k])),
+        Object.keys(NOTE_PROOF).map(k => k + ' ' + got(k).join('/')).join(', '));
+
+  // Run the untouched reference script and read its console.table output.
+  const fs = require('fs'), vm = require('vm');
+  let refRows = null;
+  vm.runInNewContext(fs.readFileSync(__dirname + '/reference/proof_sim_reference.js', 'utf8'),
+    { require, __dirname: __dirname + '/reference', console: { table: r => { refRows = r; }, log() {} } });
+  const refLine = (r, n) => Object.values(r).slice(1, 5).map(s => +s.match(n)[1]);
+  const het = refRows.filter(r => r.scenario.startsWith('lifts differ'));
+  check('sim.js matches reference/proof_sim_reference.js exactly',
+        het.length === 2 &&
+        JSON.stringify(refLine(het[0], /def (\d+)%/)) === JSON.stringify(got('defaultPct')) &&
+        JSON.stringify(refLine(het[0], /tri (\d+)%/)) === JSON.stringify(got('earlyPct')) &&
+        JSON.stringify(refLine(het[1], /tri (\d+)%/)) === JSON.stringify(got('maturePct')),
+        het.map(r => JSON.stringify(r)).join(' | '));
+  check('Simulations leave the engine\'s lift table as they found it',
+        JSON.stringify(engine.LIFT_TABLE) === JSON.stringify(LIFT_TABLE_AT_START));
+}
 
 console.log('\n  ' + pass + ' passed, ' + fail + ' failed\n');
 if (fail > 0 && typeof process !== 'undefined') process.exitCode = 1;

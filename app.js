@@ -1,6 +1,6 @@
 /* =============================================================================
    TRIAGE - app
-   Four views: Decision feed, Policy, Outcomes, Holdout. Every case runs through
+   Five views: Decision feed, Policy, Proof, Outcomes, Holdout. Every case runs through
    resolveCase() in engine.js, which applies decide() and the holdout/explore
    arms in one place. Only Outcomes and the pilot-size card use fixed numbers.
    ============================================================================= */
@@ -606,9 +606,89 @@
   });
 
   /* =========================================================================
+     PROOF
+     The seeded simulation behind the note's PROOF table (sim.js), run in a
+     Web Worker at page load. Nothing on this view is typed in by hand.
+     ========================================================================= */
+  let proof = null;
+  const PROOF_ROWS = [
+    ['defaultPct', 'Best single default: link to all, call above ₹1,500'],
+    ['earlyPct',   'Triage alone, first weeks, 10% explore'],
+    ['maturePct',  'Triage alone, estimates mature, 5% explore'],
+    ['shippedPct', 'As shipped: Triage only where it wins', 'shipped']
+  ];
+  const shortName = n => n.replace(' (Kaara-like)', ', Kaara-like');
+  const pctCell = (v, extra) => '<td class="num' + (v < 90 ? ' amber' : '') + (extra || '') + '">' + v + '%</td>';
+
+  function renderProof() {
+    const table = document.getElementById('proof-table');
+    if (!proof) {
+      table.innerHTML = '<tbody><tr><td class="empty">Running 16,000 simulated checkouts in your browser…</td></tr></tbody>';
+      return;
+    }
+    const ms = proof.merchants;
+    table.innerHTML =
+      '<thead><tr><th>vs best fixed rule in hindsight</th>' + ms.map(m => '<th class="num">' + esc(shortName(m.name)) + '</th>').join('') +
+      '<th class="num">Worst</th></tr></thead><tbody>' +
+      PROOF_ROWS.map(([k, label, cls]) =>
+        '<tr' + (cls ? ' class="' + cls + '"' : '') + '><td>' + esc(label) + '</td>' +
+        ms.map(m => pctCell(m[k])).join('') +
+        pctCell(Math.min(...ms.map(m => m[k]))) + '</tr>').join('') +
+      '</tbody>';
+    document.getElementById('proof-foot').textContent =
+      '2,000 synthetic checkouts per merchant (seed 7), each merchant with its own true response: lifts vary by merchant (sd 0.4). ' +
+      '100% = the best of six fixed rules for that merchant, picked in hindsight; over 100% = more net margin than that rule; amber = below 90%. ' +
+      'Triage gets no thresholds and pays for noise and exploring. Net margin excludes the notional fatigue cost. ' +
+      'As shipped: Triage where it beats the default (' + ms.filter(m => m.triageWins).map(m => shortName(m.name)).join('; ') +
+      '), the default elsewhere. Computed in your browser in ' + (proof.ms / 1000).toFixed(1) + 's.';
+
+    document.getElementById('rules-table').innerHTML =
+      '<thead><tr><th>Fixed rule</th>' + ms.map(m => '<th class="num">' + esc(shortName(m.name)) + '</th>').join('') + '</tr></thead><tbody>' +
+      proof.rules.map(r => '<tr' + (r === proof.defaultRule ? ' class="is-default"' : '') + '><td>' + esc(r) +
+        (r === proof.defaultRule ? '<span class="tag">Default</span>' : '') + '</td>' +
+        ms.map(m => '<td class="num' + (m.bestRule === r ? ' best' : '') + (m.rulePct[r] < 0 ? ' neg' : '') + '">' +
+          (m.rulePct[r] < 0 ? '−' + Math.abs(m.rulePct[r]) : m.rulePct[r]) + '%</td>').join('') + '</tr>').join('') +
+      '</tbody>';
+  }
+
+  function renderHero() {
+    const foot = document.getElementById('hero-foot');
+    if (!proof) { foot.innerHTML = '<span class="muted">Running the proof simulation…</span>'; return; }
+    const range = k => { const v = proof.merchants.map(m => m[k]); return Math.min(...v) + '–' + Math.max(...v) + '%'; };
+    foot.innerHTML =
+      '<span>Across four simulated merchant types, the best single default reaches <strong>' + range('defaultPct') +
+      '</strong> of each one\'s best fixed rule. As shipped, Triage reaches <strong>' + range('shippedPct') + '</strong>.</span>' +
+      '<a href="#proof">See the proof →</a>';
+  }
+
+  function proofReady(result) {
+    proof = result;
+    renderHero();
+    if (viewFromHash() === 'proof') renderProof();
+  }
+
+  function startProof() {
+    try {
+      const w = new Worker('proof-worker.js');
+      w.onmessage = e => { proofReady(e.data); w.terminate(); };
+      w.onerror = e => { e.preventDefault(); w.terminate(); runProofHere(); };
+    } catch (err) { runProofHere(); }
+  }
+  /* Fallback when workers are unavailable (e.g. opened from file://). sim.js
+     restores LIFT_TABLE before returning, and nothing renders mid-run. */
+  function runProofHere() {
+    setTimeout(() => {
+      const t0 = Date.now();
+      const r = runProof({ MERCHANT_POLICY, decide, scoreAction, checkGates, isAllowed, LIFT_TABLE, LADDER });
+      r.ms = Date.now() - t0;
+      proofReady(r);
+    }, 50);
+  }
+
+  /* =========================================================================
      NAVIGATION
      ========================================================================= */
-  const VIEWS = { feed: 'Decision feed', policy: 'Policy', outcomes: 'Outcomes', holdout: 'Holdout' };
+  const VIEWS = { feed: 'Decision feed', policy: 'Policy', proof: 'Proof', outcomes: 'Outcomes', holdout: 'Holdout' };
   const viewFromHash = () => {
     const v = location.hash.replace(/^#/, '');
     return VIEWS[v] ? v : 'feed';
@@ -623,6 +703,7 @@
     });
     close();
     if (view === 'policy') renderPolicy();
+    if (view === 'proof') renderProof();
     if (view === 'outcomes') renderOutcomes();
     if (view === 'holdout') renderHoldout();
     document.querySelector('.content').scrollTop = 0;
@@ -634,5 +715,7 @@
   window.addEventListener('hashchange', () => show(viewFromHash()));
 
   renderFeed();
+  renderHero();
   show(viewFromHash());
+  startProof();
 })();

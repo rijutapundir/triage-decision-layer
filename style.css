@@ -550,3 +550,18 @@ table.scores { width: 100%; border-collapse: collapse; font-variant-numeric: tab
   .data-table th, .data-table td { padding: var(--s2) var(--s3); white-space: nowrap; }
   .power-text { padding: var(--s3) var(--s4) var(--s4); }
 }
+
+/* ---------- Proof ---------- */
+.proof-method { max-width: 760px; }
+.proof-card { margin-bottom: var(--s6); overflow: hidden; }
+.table-scroll { overflow-x: auto; }
+.proof-table td, .proof-table th { padding-left: var(--s4); padding-right: var(--s4); }
+.proof-table td:first-child { min-width: 240px; }
+.proof-table td.amber { color: var(--amber-text); font-weight: 700; }
+.proof-table tr.shipped td { font-weight: 700; color: var(--blue); background: var(--blue-soft); }
+.proof-table tr.shipped td.amber { color: var(--amber-text); }
+.proof-table td.best { font-weight: 700; color: var(--green-text); }
+.proof-table td.neg { color: var(--red-text); font-weight: 600; }
+.proof-table .tag { margin-left: var(--s2); font-size: 11px; font-weight: 600; color: var(--blue); background: var(--blue-soft); padding: 1px var(--s2); border-radius: var(--r-pill); }
+.hero-foot a { color: var(--blue); font-weight: 600; text-decoration: none; white-space: nowrap; }
+.hero-foot a:hover { text-decoration: underline; }

@@ -27,6 +27,8 @@
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5 16 5v4.5c0 3.7-2.6 6.6-6 8-3.4-1.4-6-4.3-6-8V5z"/><path d="m7.5 10 1.8 1.8L13 8"/></svg>Policy</a>
 
           <div class="nav-section">Measurement</div>
+          <a class="nav-item" href="#proof" data-view="proof">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 16h14"/><path d="m4 12 4-4 3 3 5-6"/></svg>Proof</a>
           <a class="nav-item" href="#outcomes" data-view="outcomes">
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 16h14M5 13V9M10 13V5M15 13V7"/></svg>Outcomes</a>
           <a class="nav-item" href="#holdout" data-view="holdout">
@@ -91,6 +93,35 @@
                 <div id="impact"></div>
               </aside>
             </div>
+          </section>
+
+          <section class="view" id="view-proof" hidden>
+            <div class="page-head">
+              <div>
+                <h1>Proof: no single default fits every merchant</h1>
+                <p class="muted proof-method">Triage's decisions are made with noisy lift estimates (early: high noise, 10% explore; mature: lower noise, 5% explore) and scored against each merchant's true response.</p>
+              </div>
+              <span class="sim-pill">Simulated</span>
+            </div>
+
+            <div class="card proof-card">
+              <div class="card-head">
+                <h2>Net margin vs each merchant's best fixed rule in hindsight</h2>
+                <p class="muted">Behind a holdout, Triage matches or beats the default at every merchant.</p>
+              </div>
+              <div class="table-scroll"><table class="data-table proof-table" id="proof-table"></table></div>
+              <p class="table-foot" id="proof-foot"></p>
+            </div>
+
+            <div class="card proof-card">
+              <div class="card-head">
+                <h2>Six fixed rules, scored at each merchant</h2>
+                <p class="muted">No one rule is best everywhere: the default is the best rule at electronics but reaches only 75% at beauty. Coupons for every failure lose money at electronics.</p>
+              </div>
+              <div class="table-scroll"><table class="data-table proof-table" id="rules-table"></table></div>
+            </div>
+
+            <div id="handover"></div>
           </section>
 
           <section class="view" id="view-outcomes" hidden>
@@ -158,6 +189,7 @@
 
   <script src="data.js"></script>
   <script src="engine.js"></script>
+  <script src="sim.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
