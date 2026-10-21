@@ -1,0 +1,45 @@
+{
+  "revision": "cdf062c1241642e0e0f1d6c0baa0f5dae458ed23",
+  "runtime": "bun 1.4.3",
+  "cwd": "C:\\Users\\rijut\\triage",
+  "limits": [
+    "$B viewport emulation reports maxTouchPoints 0: no touch emulation, scrolling checked by script, not by touch gestures",
+    "screenshot mobile-override-panel.png is full-page and shows the document beneath the fixed panel; mobile-override-panel-viewport.png shows what a user sees",
+    "probe 006 (last) has no checkpoint by design",
+    "Accessibility and Performance not tested"
+  ],
+  "evidence": [],
+  "learning": [
+    {
+      "observationCommand": "p.sh 001 chain < c001.json (viewport 1280x800; goto /; read feed; note tab; console)",
+      "hypothesis": "C1 passes: guide shown, hero, 42 cases, 4 note cases, console clean. Hero chip says \"Triage ahead but not yet proven\"; check later against the Default vs Triage chart status. Next C2: override CHK-4111 to Payment link, read row, scored tags, note; screenshot panel; then clear.",
+      "nextCommand": "p.sh 002 chain < c002.json"
+    },
+    {
+      "observationCommand": "p.sh 002 chain < c002.json (override CHK-4111; read; screenshot; clear; console)",
+      "hypothesis": "C2 passes. Screenshot: lift values wrap (\"11.0 / pp\") in the 1280px panel, cosmetic. Next C3+C4+C5: override CHK-4100 to discount and CHK-4111 to payment link; Policy: voice and discounts off, approve; read impact, CHK-4111 tags (expect only Chosen, no note), CHK-4100 row, audit top rows.",
+      "nextCommand": "p.sh 003 chain < c003.json"
+    },
+    {
+      "observationCommand": "p.sh 003 chain < c003.json (overrides; policy voice+discount off; approve; read feed, tags, audit)",
+      "hypothesis": "C3, C4, C5 pass: override equal to pick shows only Chosen and no note; forbidden override cleared and logged; audit complete; console clean. Next C6+C7: Default vs Triage after workers finish (callout, chart status, learning step x2 and reset), Outcomes, Holdout sums, For evaluators.",
+      "nextCommand": "p.sh 004 chain < c004.json"
+    },
+    {
+      "observationCommand": "p.sh 004 chain < c004.json (Default vs Triage, learning, Outcomes, Holdout, For evaluators)",
+      "hypothesis": "C6, C7 render and work; console clean. FINDING (content): callout and hero say Triage \"looks ahead\"/\"ahead\", Kaara chart on the same page says \"level with or behind\"; evaluator note says fashion/home decor \"~3% ahead\" while their charts say \"level with or behind\". Next C8: 390x844 fresh load, all views bottom/no sideways, panel open/scroll/close, screenshots.",
+      "nextCommand": "p.sh 005 chain < c005.json"
+    },
+    {
+      "observationCommand": "p.sh 005 chain < c005.json (390x844 views, panel, screenshots, console)",
+      "hypothesis": "C8 passes on measurements: all 7 views reach bottom, no sideways scroll, sticky tabs, tables scroll inside cards, panel 844px tall, scrolls, closes; override tags and note present at 390. The panel screenshot was full-page (shows the document under the fixed panel), not what a user sees; $B viewport also reports maxTouchPoints 0 (no touch emulation). Next: reopen the panel and take a viewport-only screenshot.",
+      "nextCommand": "p.sh 006 chain < c006.json"
+    }
+  ],
+  "verdict": {
+    "status": "inconclusive",
+    "open": [
+      "no evidence rows"
+    ]
+  }
+}

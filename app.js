@@ -243,6 +243,8 @@
     ];
 
     const winner = d.chosen.action;
+    // The merchant's override, when it differs from Triage's pick. Scores stay Triage's own.
+    const ovr = !d.blocked && overrides[c.id] && overrides[c.id] !== winner ? overrides[c.id] : null;
     const scoreRows = d.scored.map(s => {
       const cls = [
         s.action === winner ? 'winner' : '',
@@ -251,6 +253,7 @@
       ].join(' ');
       let tag = '';
       if (s.action === winner) tag = d.blocked ? 'Forced by gate' : 'Chosen';
+      else if (s.action === ovr) tag = 'Your override';
       else if (!s.allowed) tag = notAllowedReason(s.action, c, approved) || 'Not allowed';
       else if (s.action === 'hold') tag = 'Do nothing';
       return '<tr class="' + cls + '">' +
@@ -292,6 +295,7 @@
       '<table class="scores"><thead><tr>' +
         '<th>Action</th><th>Lift</th><th>Expected gain</th><th>Cost incl. fatigue</th><th>Net value</th>' +
       '</tr></thead><tbody>' + scoreRows + '</tbody></table>' +
+      (ovr ? '<p class="note">Scores are Triage\'s own. Your override changes what this customer gets, not the analysis.</p>' : '') +
       '<p class="note">Net value is measured against holding. Cost here includes notional contact fatigue, so it is higher than the cash cost in the feed. ' +
         'All lifts and costs are engine assumptions, not measurements.</p>';
 
